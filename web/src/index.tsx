@@ -14,6 +14,7 @@ import OBSWebSocket from "obs-websocket-js";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import NewProject from "./components/NewProject/NewProject";
+import ConfirmationDialogProvider from "./components/ConfirmationDialog/ConfirmContext";
 
 const darkTheme = createTheme({
   palette: {
@@ -43,15 +44,17 @@ root.render(
           draggable
           theme="dark"
         />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Home obs={obs} />} />
-            <Route path="/newProject" element={<NewProject />} />
-            <Route path="app" element={<RequireObsConnected />}>
-              <Route path="*" element={<App />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
+        <ConfirmationDialogProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Home obs={obs} />} />
+              <Route path="/newProject" element={<NewProject />} />
+              <Route path="app" element={<RequireObsConnected />}>
+                <Route path="*" element={<App />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </ConfirmationDialogProvider>
       </ThemeProvider>
     </RecoilRoot>
   </React.StrictMode>

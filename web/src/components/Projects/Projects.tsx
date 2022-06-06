@@ -1,6 +1,6 @@
 import { List, ListItem, ListItemText } from "@mui/material";
-import { Navigate, useNavigate } from "react-router-dom";
-import { IProject } from "./Projects.type";
+import { useNavigate } from "react-router-dom";
+import { IProject } from "../../types/Project.type";
 
 interface IProjectsProps {
   projectsList: IProject[];
@@ -20,7 +20,7 @@ function Projects({ projectsList }: IProjectsProps) {
           <ListItem onClick={() => navigateToProject(elem)}>
             <ListItemText
               primary={elem.name}
-              secondary={`Cameras: ${elem.cameras}`}
+              secondary={`media: ${elem.media.length}`}
             ></ListItemText>
           </ListItem>
         );

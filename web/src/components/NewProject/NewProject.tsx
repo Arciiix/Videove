@@ -1,14 +1,12 @@
 import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
 import Loading from "../Loading/Loading";
 import Logo from "../Logo/Logo";
+import ProjectForm from "../ProjectForm/ProjectForm";
 
 function NewProject() {
   const [isLoading, setIsLoading] = useState(false);
-
-  const [name, setName] = useState("");
 
   return (
     <Box
@@ -26,15 +24,7 @@ function NewProject() {
         Create a new project
       </Typography>
 
-      <TextField
-        variant="filled"
-        label="Project name"
-        placeholder="My awesome project"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-
-      <Typography color="red">TODO</Typography>
+      <ProjectForm />
     </Box>
   );
 }

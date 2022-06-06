@@ -74,10 +74,11 @@ function Home({ obs }: IHomeProps) {
 
       <Typography variant="h5">Which project this time?</Typography>
       <Projects
+        // DEV
         projectsList={[
           {
             name: "test",
-            cameras: 2,
+            media: [],
           },
         ]}
       />

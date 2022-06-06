@@ -1,0 +1,50 @@
+.flexInline {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  gap: 5px;
+}
+
+.mediaSelect > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.mediaSelect {
+  width: 100%;
+}
+.input {
+  margin: 3px;
+}
+.fullWidth {
+  width: 100%;
+}
+.mediaItem {
+  margin-top: 30px;
+  border-bottom: 2px solid hsl(0, 0%, 90%);
+
+  justify-content: center;
+}
+.mediaItem:last-child {
+  border-bottom: none;
+}
+
+.colorPreview {
+  width: 3em;
+  height: 3em;
+  border-radius: 50%;
+}
+
+.cameraNumber {
+  width: 5em;
+  height: 5em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 30px;
+}
+.cameraNumber span {
+  font-size: 4em;
+}
