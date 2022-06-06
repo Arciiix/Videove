@@ -16,7 +16,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { HexColorPicker } from "react-colorful";
 import {
   DroidCam,
@@ -67,6 +67,156 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
 
     setMedia(newMedia);
   };
+
+  const renderMedia = useMemo(() => {
+    return media.map((e, index) => {
+      return (
+        <ListItem
+          className={styles.mediaItem}
+          key={`media-${index}-${e.number}`}
+        >
+          <Box
+            display={"flex"}
+            flexDirection={"column"}
+            alignItems={"center"}
+            width={"100%"}
+            justifyContent={"center"}
+            gap={2}
+          >
+            <div
+              className={styles.cameraNumber}
+              style={{ backgroundColor: e.color ?? "gray" }}
+              onClick={() => {
+                setChangeColorFunction(() => (color: string) => {
+                  updateMedia(e, { ...e, color });
+                });
+
+                setIsSelectingColor(true);
+              }}
+            >
+              <span
+                style={{
+                  color: getFontColor(e.color ?? "#808080"),
+                }}
+              >
+                {e.number}
+              </span>
+            </div>
+            <Select
+              className={styles.mediaSelect}
+              value={e.type}
+              onChange={(elem) => {
+                const newMedia: IMedia = {
+                  ...e,
+                  type: elem.target.value as MediaTypes,
+                  media: getNewMediaObjForType(elem.target.value as MediaTypes),
+                };
+
+                updateMedia(e, newMedia);
+              }}
+            >
+              <MenuItem
+                classes={{ root: styles.flexInline }}
+                value={MediaTypes.DROIDCAM}
+              >
+                <Icon>{getIconForMediaType(MediaTypes.DROIDCAM)}</Icon>
+                <Typography>DroidCam</Typography>
+              </MenuItem>
+              <MenuItem
+                classes={{ root: styles.flexInline }}
+                value={MediaTypes.LOCAL}
+              >
+                <Icon>{getIconForMediaType(MediaTypes.LOCAL)}</Icon>
+                <Typography>Local media</Typography>
+              </MenuItem>
+              <MenuItem
+                classes={{ root: styles.flexInline }}
+                value={MediaTypes.CUSTOM}
+              >
+                <Icon>{getIconForMediaType(MediaTypes.CUSTOM)}</Icon>
+                <Typography>Custom media (manual)</Typography>
+              </MenuItem>
+            </Select>
+            <ListItemText>
+              <TextField
+                className={styles.input}
+                variant="outlined"
+                label="Name"
+                value={e.name}
+                onChange={(elem) => {
+                  const newMedia: IMedia = {
+                    ...e,
+                    name: elem.target.value,
+                  };
+
+                  updateMedia(e, newMedia);
+                }}
+                margin="dense"
+              />
+
+              {e.type === MediaTypes.DROIDCAM && (
+                <TextField
+                  className={styles.input}
+                  variant="outlined"
+                  label="URL"
+                  value={(e.media as DroidCam).url}
+                  onChange={(elem) => {
+                    const newMedia = e;
+                    (e.media as DroidCam).url = elem.target.value;
+
+                    updateMedia(e, newMedia);
+                  }}
+                  margin="dense"
+                />
+              )}
+
+              {e.type === MediaTypes.LOCAL && (
+                <TextField
+                  className={styles.input}
+                  variant="outlined"
+                  label="Path"
+                  value={(e.media as LocalMedia).path}
+                  onChange={(elem) => {
+                    const newMedia = e;
+                    (e.media as LocalMedia).path = elem.target.value;
+
+                    updateMedia(e, newMedia);
+                  }}
+                  margin="dense"
+                />
+              )}
+            </ListItemText>
+
+            <Button
+              variant="text"
+              onClick={async () => {
+                // Ask for confirmation
+
+                const confirmed = await confirm(
+                  "Are you sure you want to delete this media?"
+                );
+
+                if (!confirmed) return;
+
+                const newMedia = [...media];
+                newMedia.splice(newMedia.indexOf(e), 1);
+
+                //Reorder the media numbers
+                for (let i = 0; i < newMedia.length; i++) {
+                  newMedia[i].number = i + 1;
+                }
+
+                setMedia(newMedia);
+              }}
+            >
+              <Delete />
+              Delete
+            </Button>
+          </Box>
+        </ListItem>
+      );
+    });
+  }, [media]);
 
   return (
     <Box>
@@ -119,154 +269,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
         </DialogActions>
       </Dialog>
 
-      <List>
-        {media.map((e) => {
-          return (
-            <ListItem className={styles.mediaItem}>
-              <Box
-                display={"flex"}
-                flexDirection={"column"}
-                alignItems={"center"}
-                width={"100%"}
-                justifyContent={"center"}
-                gap={2}
-              >
-                <div
-                  className={styles.cameraNumber}
-                  style={{ backgroundColor: e.color ?? "gray" }}
-                  onClick={() => {
-                    setChangeColorFunction(() => (color: string) => {
-                      updateMedia(e, { ...e, color });
-                    });
-
-                    setIsSelectingColor(true);
-                  }}
-                >
-                  <span
-                    style={{
-                      color: getFontColor(e.color ?? "#808080"),
-                    }}
-                  >
-                    {e.number}
-                  </span>
-                </div>
-                <Select
-                  className={styles.mediaSelect}
-                  value={e.type}
-                  onChange={(elem) => {
-                    const newMedia: IMedia = {
-                      ...e,
-                      type: elem.target.value as MediaTypes,
-                      media: getNewMediaObjForType(
-                        elem.target.value as MediaTypes
-                      ),
-                    };
-
-                    updateMedia(e, newMedia);
-                  }}
-                >
-                  <MenuItem
-                    classes={{ root: styles.flexInline }}
-                    value={MediaTypes.DROIDCAM}
-                  >
-                    <Icon>{getIconForMediaType(MediaTypes.DROIDCAM)}</Icon>
-                    <Typography>DroidCam</Typography>
-                  </MenuItem>
-                  <MenuItem
-                    classes={{ root: styles.flexInline }}
-                    value={MediaTypes.LOCAL}
-                  >
-                    <Icon>{getIconForMediaType(MediaTypes.LOCAL)}</Icon>
-                    <Typography>Local media</Typography>
-                  </MenuItem>
-                  <MenuItem
-                    classes={{ root: styles.flexInline }}
-                    value={MediaTypes.CUSTOM}
-                  >
-                    <Icon>{getIconForMediaType(MediaTypes.CUSTOM)}</Icon>
-                    <Typography>Custom media (manual)</Typography>
-                  </MenuItem>
-                </Select>
-                <ListItemText>
-                  <TextField
-                    className={styles.input}
-                    variant="outlined"
-                    label="Name"
-                    value={e.name}
-                    onChange={(elem) => {
-                      const newMedia: IMedia = {
-                        ...e,
-                        name: elem.target.value,
-                      };
-
-                      updateMedia(e, newMedia);
-                    }}
-                    margin="dense"
-                  />
-
-                  {e.type === MediaTypes.DROIDCAM && (
-                    <TextField
-                      className={styles.input}
-                      variant="outlined"
-                      label="URL"
-                      value={(e.media as DroidCam).url}
-                      onChange={(elem) => {
-                        const newMedia = e;
-                        (e.media as DroidCam).url = elem.target.value;
-
-                        updateMedia(e, newMedia);
-                      }}
-                      margin="dense"
-                    />
-                  )}
-
-                  {e.type === MediaTypes.LOCAL && (
-                    <TextField
-                      className={styles.input}
-                      variant="outlined"
-                      label="Path"
-                      value={(e.media as LocalMedia).path}
-                      onChange={(elem) => {
-                        const newMedia = e;
-                        (e.media as LocalMedia).path = elem.target.value;
-
-                        updateMedia(e, newMedia);
-                      }}
-                      margin="dense"
-                    />
-                  )}
-                </ListItemText>
-
-                <Button
-                  variant="text"
-                  onClick={async () => {
-                    // Ask for confirmation
-
-                    const confirmed = await confirm(
-                      "Are you sure you want to delete this media?"
-                    );
-
-                    if (!confirmed) return;
-
-                    const newMedia = [...media];
-                    newMedia.splice(newMedia.indexOf(e), 1);
-
-                    //Reorder the media numbers
-                    for (let i = 0; i < newMedia.length; i++) {
-                      newMedia[i].number = i + 1;
-                    }
-
-                    setMedia(newMedia);
-                  }}
-                >
-                  <Delete />
-                  Delete
-                </Button>
-              </Box>
-            </ListItem>
-          );
-        })}
-      </List>
+      <List>{renderMedia}</List>
       <Button
         fullWidth
         variant="outlined"

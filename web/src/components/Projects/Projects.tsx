@@ -1,4 +1,5 @@
 import { List, ListItem, ListItemText } from "@mui/material";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { IProject } from "../../types/Project.type";
 
@@ -13,20 +14,20 @@ function Projects({ projectsList }: IProjectsProps) {
     return navigate(`/app/${project.name}`);
   };
 
-  return (
-    <List>
-      {projectsList.map((elem) => {
-        return (
-          <ListItem onClick={() => navigateToProject(elem)}>
-            <ListItemText
-              primary={elem.name}
-              secondary={`media: ${elem.media.length}`}
-            ></ListItemText>
-          </ListItem>
-        );
-      })}
-    </List>
-  );
+  const renderProjects = useMemo(() => {
+    return projectsList.map((elem) => {
+      return (
+        <ListItem onClick={() => navigateToProject(elem)}>
+          <ListItemText
+            primary={elem.name}
+            secondary={`media: ${elem.media.length}`}
+          ></ListItemText>
+        </ListItem>
+      );
+    });
+  }, [projectsList, navigateToProject]);
+
+  return <List>{renderProjects}</List>;
 }
 
 export default Projects;
