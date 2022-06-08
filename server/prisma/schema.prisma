@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgres"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id    String  @id @default(cuid())
+  name  String  @unique
+  media Media[]
+}
+
+model Media {
+  id        String     @id @default(cuid())
+  color     String?    @default("#808080")
+  name      String?
+  type      MediaTypes @default(LOCAL)
+  media     Json?
+  Project   Project?   @relation(fields: [projectId], references: [id])
+  projectId String?
+}
+
+enum MediaTypes {
+  LOCAL
+  DROIDCAM
+  CUSTOM
+}
