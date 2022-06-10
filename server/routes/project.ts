@@ -1,16 +1,47 @@
+import { Media } from "@prisma/client";
 import express from "express";
 import Joi from "joi";
 import { prisma } from "../db";
 import validate from "../utils/validate";
-import { addProjectSchema } from "./project.schema";
+import { addProjectSchema, updateProjectSchema } from "./project.schema";
 
 const projectRouter = express.Router();
 
 projectRouter.get(
   "/all",
   async (req: express.Request, res: express.Response) => {
-    const allProjects = await prisma.project.findMany({});
+    const allProjects = await prisma.project.findMany({
+      include: {
+        media: !!req.query.includeMedia,
+      },
+    });
     res.send({ success: true, projects: allProjects });
+  }
+);
+
+projectRouter.get(
+  "/:id",
+  async (req: express.Request, res: express.Response) => {
+    if (!req.params.id) {
+      res.status(400).send({ success: false, message: "Invalid project id" });
+      return;
+    }
+
+    const project = await prisma.project.findFirst({
+      where: {
+        id: req.params.id,
+      },
+      include: {
+        media: true,
+      },
+    });
+
+    if (!project) {
+      res.status(404).send({ success: false, message: "Not found" });
+      return;
+    }
+
+    return project;
   }
 );
 
@@ -34,7 +65,10 @@ projectRouter.post(
       return;
     }
 
-    const createdMedia = await prisma.project.create({
+    const createdProject = await prisma.project.create({
+      include: {
+        media: true,
+      },
       data: {
         name: data.name,
         media: {
@@ -49,7 +83,89 @@ projectRouter.post(
         },
       },
     });
-    res.send({ success: true, media: createdMedia });
+
+    res.send({ success: true, project: createdProject });
+  }
+);
+
+projectRouter.put(
+  "/update",
+  async (req: express.Request, res: express.Response) => {
+    const data = await validate(updateProjectSchema, req.body, res);
+    if (!data) return;
+
+    const updatedProject = await prisma.project.update({
+      where: {
+        id: data.id,
+      },
+      data: {
+        name: data.project.name,
+      },
+    });
+
+    //Delete all the media
+    await prisma.media.deleteMany({
+      where: {
+        projectId: updatedProject.id,
+      },
+    });
+
+    //Replace all nulls, serialize the object
+    const media: Media[] = data.project.media.map((e) => {
+      return {
+        color: e.color ?? "#808080",
+        name: e.name ?? "",
+        type: e.type,
+        media: e.media ?? undefined,
+        projectId: updatedProject.id,
+      };
+    });
+
+    //Create the media once again
+    await prisma.media.createMany({
+      data: media,
+    });
+
+    const newProject = await prisma.project.findFirst({
+      where: {
+        id: updatedProject.id,
+      },
+      include: {
+        media: true,
+      },
+    });
+
+    res.send({ success: true, project: newProject });
+  }
+);
+
+projectRouter.delete(
+  "/delete",
+  async (req: express.Request, res: express.Response) => {
+    if (!req.body.id) {
+      res.status(404).send({ success: false, error: "Not found" });
+      return;
+    }
+
+    //Check if the project even exists
+    const project = await prisma.project.findFirst({
+      where: {
+        id: req.body.id,
+      },
+    });
+
+    if (!project) {
+      res.status(404).send({ success: false, error: "Not found" });
+      return;
+    }
+
+    await prisma.project.delete({
+      where: {
+        id: project.id,
+      },
+    });
+
+    res.send({ success: true });
   }
 );
 

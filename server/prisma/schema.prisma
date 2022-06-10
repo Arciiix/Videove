@@ -22,7 +22,7 @@ model Media {
   name      String?
   type      MediaTypes @default(LOCAL)
   media     Json?
-  Project   Project?   @relation(fields: [projectId], references: [id])
+  Project   Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String?
 }
 
