@@ -1,7 +1,7 @@
 import { Media } from "@prisma/client";
 import express from "express";
-import Joi from "joi";
 import { prisma } from "../db";
+import logger from "../utils/logger";
 import validate from "../utils/validate";
 import { addProjectSchema, updateProjectSchema } from "./project.schema";
 
@@ -15,6 +15,7 @@ projectRouter.get(
         media: !!req.query.includeMedia,
       },
     });
+    logger.info("Got all projects");
     res.send({ success: true, projects: allProjects });
   }
 );
@@ -41,7 +42,8 @@ projectRouter.get(
       return;
     }
 
-    return project;
+    logger.info(`Got project ${project.id}`);
+    res.send({ success: true, project });
   }
 );
 
@@ -84,6 +86,7 @@ projectRouter.post(
       },
     });
 
+    logger.info(`Created a new project with id ${createdProject.id}`);
     res.send({ success: true, project: createdProject });
   }
 );
@@ -135,6 +138,7 @@ projectRouter.put(
       },
     });
 
+    logger.info(`Project ${newProject.id} has been updated!`);
     res.send({ success: true, project: newProject });
   }
 );
@@ -165,6 +169,7 @@ projectRouter.delete(
       },
     });
 
+    logger.info(`Project ${project.id} has been deleted!`);
     res.send({ success: true });
   }
 );
