@@ -33,11 +33,11 @@ function getNewMediaObjForType(mediaType: MediaTypes): Media {
     case MediaTypes.DROIDCAM:
       return new DroidCam("");
     case MediaTypes.LOCAL:
-      return new LocalMedia("");
+      return new LocalMedia("", 0);
     case MediaTypes.CUSTOM:
       return new CustomMedia();
     case MediaTypes.AUDIO:
-      return new AudioMedia("");
+      return new AudioMedia("", 0);
     default:
       return new CustomMedia();
   }

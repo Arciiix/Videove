@@ -19,10 +19,13 @@ class Media {}
 
 class LocalMedia extends Media {
   path: string;
+  delay: number;
+  delayStringHelper?: string;
 
-  constructor(path: string) {
+  constructor(path: string, delay: number) {
     super();
     this.path = path;
+    this.delay = delay;
   }
 }
 

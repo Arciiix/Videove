@@ -31,6 +31,7 @@ import {
   getIconForMediaType,
   getNewMediaObjForType,
 } from "../../utils/mediaTypeUtils";
+import numericInputRegexp from "../../utils/numericInputRegex";
 import useConfirm from "../ConfirmationDialog/useConfirm";
 import styles from "./ProjectForm.module.css";
 
@@ -45,7 +46,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
       number: 1,
       name: "",
       type: MediaTypes.LOCAL,
-      media: new LocalMedia(""),
+      media: new LocalMedia("", 0),
     },
   ]);
 
@@ -158,6 +159,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
 
                   updateMedia(e, newMedia);
                 }}
+                fullWidth
                 margin="dense"
               />
 
@@ -173,24 +175,50 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
 
                     updateMedia(e, newMedia);
                   }}
+                  fullWidth
                   margin="dense"
                 />
               )}
 
               {(e.type === MediaTypes.LOCAL || e.type === MediaTypes.AUDIO) && (
-                <TextField
-                  className={styles.input}
-                  variant="outlined"
-                  label="Path"
-                  value={(e.media as LocalMedia).path}
-                  onChange={(elem) => {
-                    const newMedia = e;
-                    (e.media as LocalMedia).path = elem.target.value;
+                <div>
+                  <TextField
+                    className={styles.input}
+                    variant="outlined"
+                    label="Path"
+                    value={(e.media as LocalMedia).path}
+                    onChange={(elem) => {
+                      const newMedia = e;
+                      (e.media as LocalMedia).path = elem.target.value;
 
-                    updateMedia(e, newMedia);
-                  }}
-                  margin="dense"
-                />
+                      updateMedia(e, newMedia);
+                    }}
+                    margin="dense"
+                  />
+                  <TextField
+                    className={styles.input}
+                    variant="outlined"
+                    label="Delay [s]"
+                    value={(e.media as LocalMedia).delayStringHelper}
+                    onChange={(elem) => {
+                      if (!numericInputRegexp.test(elem.target.value)) return;
+                      let newValue = elem.target.value;
+                      if (isNaN(parseFloat(newValue))) {
+                        newValue = "0";
+                      }
+                      const newMedia = e;
+                      (e.media as LocalMedia).delayStringHelper = newValue;
+                      //If the next character is a dot, don't change the current value (user wills to write the decimal part of the number)
+                      //Otherwise, parse the value of the input as float and update it in the media object
+                      if (newValue.slice(-1) !== ".") {
+                        (e.media as LocalMedia).delay = parseFloat(newValue);
+                      }
+
+                      updateMedia(e, newMedia);
+                    }}
+                    margin="dense"
+                  />
+                </div>
               )}
             </ListItemText>
 
@@ -286,7 +314,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
             number: media.length + 1,
             name: "",
             type: MediaTypes.LOCAL,
-            media: new LocalMedia(""),
+            media: new LocalMedia("", 0),
           };
 
           setMedia([...media, newMedia]);
