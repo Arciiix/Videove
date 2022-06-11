@@ -1,7 +1,7 @@
 import "./Logo.css";
 
 interface ILogoProps {
-  full: boolean;
+  full?: boolean;
   width?: string;
   height?: string;
 }
@@ -13,11 +13,7 @@ function Logo({ full, width, height }: ILogoProps) {
         width: width ?? "auto",
         height: height ?? "auto",
       }}
-      src={
-        process.env.PUBLIC_URL + full
-          ? "logo-full.png"
-          : "android-chrome-512x512.png"
-      }
+      src={"/api/cdn/" + (full ? "logo-full.png" : "logo.png")}
       className="App-logo"
       alt="logo"
     />

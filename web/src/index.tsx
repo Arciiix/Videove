@@ -9,12 +9,13 @@ import { createTheme, CssBaseline } from "@mui/material";
 import Home from "./components/Home/Home";
 import { RecoilRoot } from "recoil";
 import RequireObsConnected from "./helpers/RequireObsConnected";
-import OBSWebSocket from "obs-websocket-js";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import NewProject from "./components/NewProject/NewProject";
 import ConfirmationDialogProvider from "./components/ConfirmationDialog/ConfirmContext";
+import OBSContext from "./context/OBS.context";
+import obs from "./obs";
 
 const darkTheme = createTheme({
   palette: {
@@ -26,36 +27,36 @@ const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 
-const obs = new OBSWebSocket();
-
 root.render(
   <React.StrictMode>
     <RecoilRoot>
-      <ThemeProvider theme={darkTheme}>
-        <CssBaseline />
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          theme="dark"
-        />
-        <ConfirmationDialogProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Home obs={obs} />} />
-              <Route path="/newProject" element={<NewProject />} />
-              <Route path="app" element={<RequireObsConnected />}>
-                <Route path="*" element={<App />} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </ConfirmationDialogProvider>
-      </ThemeProvider>
+      <OBSContext.Provider value={obs}>
+        <ThemeProvider theme={darkTheme}>
+          <CssBaseline />
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            theme="dark"
+          />
+          <ConfirmationDialogProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/newProject" element={<NewProject />} />
+                <Route path="app" element={<RequireObsConnected />}>
+                  <Route path=":id" element={<App />} />
+                </Route>
+              </Routes>
+            </BrowserRouter>
+          </ConfirmationDialogProvider>
+        </ThemeProvider>
+      </OBSContext.Provider>
     </RecoilRoot>
   </React.StrictMode>
 );

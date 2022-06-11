@@ -1,10 +1,11 @@
 import { Box, Button, TextField, Typography } from "@mui/material";
-import OBSWebSocket from "obs-websocket-js";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useRecoilState } from "recoil";
+import OBSContext from "../../context/OBS.context";
 import obsStatusState from "../../recoil/obs-status";
+import { IProject } from "../../types/Project.type";
 import Loading from "../Loading/Loading";
 import Logo from "../Logo/Logo";
 import OBSStatus from "../OBSStatus/OBSStatus";
@@ -12,14 +13,16 @@ import Projects from "../Projects/Projects";
 
 import styles from "./Home.module.css";
 
-interface IHomeProps {
-  obs: OBSWebSocket;
-}
-function Home({ obs }: IHomeProps) {
+function Home() {
   const navigate = useNavigate();
 
+  const obs = useContext(OBSContext);
+
+  const [uniqueId, setUniqueId] = useState("");
+
   const [obsStatus, setObsStatus] = useRecoilState(obsStatusState);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [projects, setProjects] = useState<IProject[]>([]);
 
   const [address, setAddress] = useState("localhost:4444");
   const [password, setPassword] = useState("");
@@ -38,9 +41,32 @@ function Home({ obs }: IHomeProps) {
     setIsLoading(false);
   };
 
+  const getProjects = async () => {
+    setIsLoading(true);
+    const projectsReq = await fetch("/api/projects/all?includeMedia=true");
+    if (projectsReq.status !== 200) {
+      toast.error("Couldn't get projects!", {
+        toastId: uniqueId + "_GET_ERR",
+      });
+      console.error(`Couldn't get projects`);
+      console.error(projectsReq);
+      console.error(await projectsReq.json());
+    } else {
+      const projectsResponse = await projectsReq.json();
+      setProjects(projectsResponse.projects);
+      setIsLoading(false);
+    }
+  };
+
   const newProject = async () => {
     return navigate("/newProject");
   };
+
+  useEffect(() => {
+    document.title = "Videove";
+    setUniqueId("HOME" + new Date().getTime());
+    getProjects();
+  }, []);
 
   return (
     <Box
@@ -73,15 +99,7 @@ function Home({ obs }: IHomeProps) {
       </Button>
 
       <Typography variant="h5">Which project this time?</Typography>
-      <Projects
-        // DEV
-        projectsList={[
-          {
-            name: "test",
-            media: [],
-          },
-        ]}
-      />
+      <Projects projectsList={projects} />
 
       <Button onClick={newProject}>Maybe new?</Button>
 

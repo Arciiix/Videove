@@ -1,12 +1,16 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Loading from "../Loading/Loading";
 import Logo from "../Logo/Logo";
 import ProjectForm from "../ProjectForm/ProjectForm";
 
 function NewProject() {
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    document.title = "Videove - new project";
+  }, []);
 
   return (
     <Box
