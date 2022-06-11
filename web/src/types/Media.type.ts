@@ -2,6 +2,7 @@ enum MediaTypes {
   LOCAL = "Local",
   DROIDCAM = "DroidCam",
   CUSTOM = "Custom (manual)",
+  AUDIO = "Audio",
 }
 
 type Medias = IMedia[];
@@ -35,5 +36,7 @@ class DroidCam extends Media {
 }
 class CustomMedia extends Media {}
 
-export { LocalMedia, DroidCam, CustomMedia, Media, MediaTypes };
+class AudioMedia extends LocalMedia {}
+
+export { LocalMedia, DroidCam, CustomMedia, AudioMedia, Media, MediaTypes };
 export type { Medias, IMedia };

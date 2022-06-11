@@ -30,4 +30,5 @@ enum MediaTypes {
   LOCAL
   DROIDCAM
   CUSTOM
+  AUDIO
 }

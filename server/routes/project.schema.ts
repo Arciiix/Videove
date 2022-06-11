@@ -11,7 +11,7 @@ const addProjectSchema = Joi.object({
         .default("#808080"),
       name: Joi.string().allow(null),
       type: Joi.string()
-        .regex(/LOCAL|DROIDCAM|CUSTOM/)
+        .regex(/LOCAL|DROIDCAM|CUSTOM|AUDIO/)
         .required(),
       media: Joi.object().allow(null),
       projectId: Joi.string(), //For update endpoints

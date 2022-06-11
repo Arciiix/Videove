@@ -136,6 +136,13 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
                 <Icon>{getIconForMediaType(MediaTypes.CUSTOM)}</Icon>
                 <Typography>Custom media (manual)</Typography>
               </MenuItem>
+              <MenuItem
+                classes={{ root: styles.flexInline }}
+                value={MediaTypes.AUDIO}
+              >
+                <Icon>{getIconForMediaType(MediaTypes.AUDIO)}</Icon>
+                <Typography>Audio</Typography>
+              </MenuItem>
             </Select>
             <ListItemText>
               <TextField
@@ -170,7 +177,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
                 />
               )}
 
-              {e.type === MediaTypes.LOCAL && (
+              {(e.type === MediaTypes.LOCAL || e.type === MediaTypes.AUDIO) && (
                 <TextField
                   className={styles.input}
                   variant="outlined"

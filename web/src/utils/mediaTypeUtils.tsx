@@ -1,5 +1,11 @@
-import { Android, HelpCenter, MusicVideo } from "@mui/icons-material";
 import {
+  Android,
+  HelpCenter,
+  MusicNote,
+  MusicVideo,
+} from "@mui/icons-material";
+import {
+  AudioMedia,
   CustomMedia,
   DroidCam,
   LocalMedia,
@@ -15,6 +21,8 @@ function getIconForMediaType(mediaType: MediaTypes): JSX.Element {
       return <MusicVideo />;
     case MediaTypes.CUSTOM:
       return <HelpCenter />;
+    case MediaTypes.AUDIO:
+      return <MusicNote />;
     default:
       return <HelpCenter />;
   }
@@ -28,6 +36,8 @@ function getNewMediaObjForType(mediaType: MediaTypes): Media {
       return new LocalMedia("");
     case MediaTypes.CUSTOM:
       return new CustomMedia();
+    case MediaTypes.AUDIO:
+      return new AudioMedia("");
     default:
       return new CustomMedia();
   }
