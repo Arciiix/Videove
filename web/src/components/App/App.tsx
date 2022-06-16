@@ -7,6 +7,7 @@ import obsRecordingStreamingStatusState from "../../recoil/obs-recording-streami
 import { IProject } from "../../types/Project.type";
 import Loading from "../Loading/Loading";
 import MainAppBar from "./MainAppBar/MainAppBar";
+import ReactPlayer from "react-player";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -20,7 +21,6 @@ function App() {
   const [project, setProject] = useState<IProject>({ name: "", media: [] });
 
   const [isOnAir, setIsOnAir] = useState(false);
-
   const navigate = useNavigate();
   const { id } = useParams();
 

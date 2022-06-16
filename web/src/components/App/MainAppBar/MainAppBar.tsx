@@ -40,7 +40,7 @@ function MainAppBar({
             <Logo height="30px" />
             <Typography variant="h5">{projectName}</Typography>
           </Box>
-          <Box display="flex">
+          <Box display="flex" flexDirection={{ md: "row", xs: "column" }}>
             <Indicator status={isOnAir} description="ON AIR" />
             <HorizontalDivider />
             <Indicator status={isRecording} description="RECORDING" />

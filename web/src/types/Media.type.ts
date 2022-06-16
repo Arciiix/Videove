@@ -37,7 +37,14 @@ class DroidCam extends Media {
     this.url = url;
   }
 }
-class CustomMedia extends Media {}
+class CustomMedia extends Media {
+  screenSharePreview: boolean;
+
+  constructor(screenSharePreview: boolean) {
+    super();
+    this.screenSharePreview = screenSharePreview;
+  }
+}
 
 class AudioMedia extends LocalMedia {}
 

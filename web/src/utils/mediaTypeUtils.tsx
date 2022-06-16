@@ -35,11 +35,11 @@ function getNewMediaObjForType(mediaType: MediaTypes): Media {
     case MediaTypes.LOCAL:
       return new LocalMedia("", 0);
     case MediaTypes.CUSTOM:
-      return new CustomMedia();
+      return new CustomMedia(false);
     case MediaTypes.AUDIO:
       return new AudioMedia("", 0);
     default:
-      return new CustomMedia();
+      return new CustomMedia(false);
   }
 }
 

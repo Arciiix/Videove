@@ -2,10 +2,13 @@ import { Add, Check, Delete, Save } from "@mui/icons-material";
 import {
   Box,
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
+  FormGroup,
   Icon,
   IconButton,
   List,
@@ -19,6 +22,7 @@ import {
 import { useMemo, useState } from "react";
 import { HexColorPicker } from "react-colorful";
 import {
+  CustomMedia,
   DroidCam,
   IMedia,
   LocalMedia,
@@ -219,6 +223,26 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
                     margin="dense"
                   />
                 </div>
+              )}
+
+              {e.type === MediaTypes.CUSTOM && (
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        value={(e.media as CustomMedia).screenSharePreview}
+                        onChange={(elem) => {
+                          const newMedia = e;
+                          (e.media as CustomMedia).screenSharePreview =
+                            elem.target.checked;
+
+                          updateMedia(e, newMedia);
+                        }}
+                      />
+                    }
+                    label="Preview by screen sharing"
+                  />
+                </FormGroup>
               )}
             </ListItemText>
 
