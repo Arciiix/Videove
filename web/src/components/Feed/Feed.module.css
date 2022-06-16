@@ -1,0 +1,21 @@
+.mediaWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: max-content;
+  margin: 10px;
+  cursor: pointer;
+}
+.inactive {
+  border: 4px solid hsl(0, 0%, 90%);
+}
+.active {
+  border: 4px solid hsl(337, 100%, 34%);
+}
+.next {
+  border: 4px solid hsl(152, 100%, 37%);
+}
+.media {
+  border-radius: 8px;
+  margin: 10px;
+}

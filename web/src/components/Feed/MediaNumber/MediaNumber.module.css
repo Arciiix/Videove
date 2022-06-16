@@ -1,0 +1,10 @@
+.mediaNumber {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 2px;
+  font-size: 2.5em;
+  width: 60px;
+  height: 60px;
+}

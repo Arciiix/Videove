@@ -1,10 +1,13 @@
 import { Box, Button, TextField, Typography } from "@mui/material";
+import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useRecoilState } from "recoil";
+import { io } from "socket.io-client";
 import OBSContext from "../../context/OBS.context";
 import obsStatusState from "../../recoil/obs-status";
+import socketIoState from "../../recoil/socketio";
 import { IProject } from "../../types/Project.type";
 import Loading from "../Loading/Loading";
 import Logo from "../Logo/Logo";
@@ -17,6 +20,7 @@ function Home() {
   const navigate = useNavigate();
 
   const obs = useContext(OBSContext);
+  const [socket, setSocket] = useRecoilState(socketIoState);
 
   const [uniqueId, setUniqueId] = useState("");
 
@@ -43,18 +47,16 @@ function Home() {
 
   const getProjects = async () => {
     setIsLoading(true);
-    const projectsReq = await fetch("/api/projects/all?includeMedia=true");
-    if (projectsReq.status !== 200) {
-      toast.error("Couldn't get projects!", {
-        toastId: uniqueId + "_GET_ERR",
-      });
-      console.error(`Couldn't get projects`);
-      console.error(projectsReq);
-      console.error(await projectsReq.json());
-    } else {
-      const projectsResponse = await projectsReq.json();
+    try {
+      const projectsReq = await axios.get(
+        "/api/projects/all?includeMedia=true"
+      );
+      const projectsResponse = await projectsReq.data;
       setProjects(projectsResponse.projects);
       setIsLoading(false);
+    } catch (err) {
+      console.error(err);
+      toast.error("Couldn't get projects");
     }
   };
 
@@ -66,6 +68,11 @@ function Home() {
     document.title = "Videove";
     setUniqueId("HOME" + new Date().getTime());
     getProjects();
+
+    if (!socket) {
+      const socket = io();
+      setSocket(socket);
+    }
   }, []);
 
   return (

@@ -11,15 +11,17 @@ datasource db {
 }
 
 model Project {
-  id    String  @id @default(cuid())
-  name  String  @unique
-  media Media[]
+  id     String  @id @default(cuid())
+  name   String  @unique
+  layout Json?
+  media  Media[]
 }
 
 model Media {
   id        String     @id @default(cuid())
   color     String?    @default("#808080")
   name      String?
+  number    Int        @default(autoincrement())
   type      MediaTypes @default(LOCAL)
   media     Json?
   Project   Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)

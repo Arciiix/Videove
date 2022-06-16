@@ -3,7 +3,11 @@ import express from "express";
 import { prisma } from "../db";
 import logger from "../utils/logger";
 import validate from "../utils/validate";
-import { addProjectSchema, updateProjectSchema } from "./project.schema";
+import {
+  addProjectSchema,
+  patchProjectSchema,
+  updateProjectSchema,
+} from "./project.schema";
 
 const projectRouter = express.Router();
 
@@ -73,12 +77,14 @@ projectRouter.post(
       },
       data: {
         name: data.name,
+        layout: data.layout,
         media: {
           create: data.media.map((e) => {
             return {
               color: e.color,
               name: e.name,
               type: e.type,
+              number: e.number,
               media: e.media,
             };
           }),
@@ -103,6 +109,7 @@ projectRouter.put(
       },
       data: {
         name: data.project.name,
+        layout: data.layout,
       },
     });
 
@@ -118,6 +125,7 @@ projectRouter.put(
       return {
         color: e.color ?? "#808080",
         name: e.name ?? "",
+        number: e.number,
         type: e.type,
         media: e.media ?? undefined,
         projectId: updatedProject.id,
@@ -140,6 +148,35 @@ projectRouter.put(
 
     logger.info(`Project ${newProject.id} has been updated!`);
     res.send({ success: true, project: newProject });
+  }
+);
+
+projectRouter.patch(
+  "/update",
+  async (req: express.Request, res: express.Response) => {
+    const data = await validate(patchProjectSchema, req.body, res);
+    if (!data) return;
+
+    // Check if the project exists
+    const project = await prisma.project.findFirst({
+      where: {
+        id: data.id,
+      },
+    });
+
+    if (!project) {
+      res.status(404).send({ success: false, message: "Not found" });
+      return;
+    }
+
+    const updatedProject = await prisma.project.update({
+      where: {
+        id: project.id,
+      },
+      data: data.project,
+    });
+
+    res.send({ success: true, project: updatedProject });
   }
 );
 

@@ -39,6 +39,7 @@ class DroidCam extends Media {
 }
 class CustomMedia extends Media {
   screenSharePreview: boolean;
+  screenShareStreamObj?: MediaStream;
 
   constructor(screenSharePreview: boolean) {
     super();

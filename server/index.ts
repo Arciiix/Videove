@@ -6,6 +6,7 @@ import logger from "./utils/logger";
 import projectRouter from "./routes/project";
 import loggingMiddleware from "./middlewares/loggingMiddleware";
 import cdnRouter from "./routes/cdn";
+import testingRouter from "./routes/testing";
 
 const app = express();
 app.use(express.json());
@@ -15,6 +16,7 @@ const api = express.Router();
 app.use("/api", api);
 api.use("/projects", projectRouter);
 api.use("/cdn", cdnRouter);
+api.use("/testing", testingRouter); //DEV
 
 const server = app.listen(config.PORT, () => {
   logger.info(`App has started on port ${config.PORT}`);
@@ -37,3 +39,5 @@ async function main() {
   await initDatabase();
 }
 main();
+
+export { io };

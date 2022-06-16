@@ -28,37 +28,37 @@ const root = ReactDOM.createRoot(
 );
 
 root.render(
-  <React.StrictMode>
-    <RecoilRoot>
-      <OBSContext.Provider value={obs}>
-        <ThemeProvider theme={darkTheme}>
-          <CssBaseline />
-          <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            theme="dark"
-          />
-          <ConfirmationDialogProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/newProject" element={<NewProject />} />
-                <Route path="app" element={<RequireObsConnected />}>
-                  <Route path=":id" element={<App />} />
-                </Route>
-              </Routes>
-            </BrowserRouter>
-          </ConfirmationDialogProvider>
-        </ThemeProvider>
-      </OBSContext.Provider>
-    </RecoilRoot>
-  </React.StrictMode>
+  // <React.StrictMode>
+  <RecoilRoot>
+    <OBSContext.Provider value={obs}>
+      <ThemeProvider theme={darkTheme}>
+        <CssBaseline />
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          theme="dark"
+        />
+        <ConfirmationDialogProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/newProject" element={<NewProject />} />
+              <Route path="app" element={<RequireObsConnected />}>
+                <Route path=":id" element={<App />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </ConfirmationDialogProvider>
+      </ThemeProvider>
+    </OBSContext.Provider>
+  </RecoilRoot>
+  // </React.StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function
