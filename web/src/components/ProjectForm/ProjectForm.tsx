@@ -48,10 +48,10 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
   const [name, setName] = useState("");
   const [media, setMedia] = useState<Medias>([
     {
-      number: 1,
-      name: "",
-      type: MediaTypes.LOCAL,
-      media: new LocalMedia("", 0),
+      number: 0,
+      name: "Output (don't change)",
+      type: MediaTypes.CUSTOM,
+      media: new CustomMedia(true),
     },
   ]);
 
@@ -239,6 +239,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
                     control={
                       <Checkbox
                         value={(e.media as CustomMedia).screenSharePreview}
+                        defaultChecked
                         onChange={(elem) => {
                           const newMedia = e;
                           (e.media as CustomMedia).screenSharePreview =
