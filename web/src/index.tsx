@@ -16,6 +16,7 @@ import NewProject from "./components/NewProject/NewProject";
 import ConfirmationDialogProvider from "./components/ConfirmationDialog/ConfirmContext";
 import OBSContext from "./context/OBS.context";
 import obs from "./obs";
+import MediaOutput from "./components/MediaOutput/MediaOutput";
 
 const darkTheme = createTheme({
   palette: {
@@ -51,6 +52,14 @@ root.render(
               <Route path="/newProject" element={<NewProject />} />
               <Route path="app" element={<RequireObsConnected />}>
                 <Route path=":id" element={<App />} />
+              </Route>
+              <Route path="output">
+                <Route path=":project">
+                  <Route
+                    path=":media/:width/:height"
+                    element={<MediaOutput />}
+                  ></Route>
+                </Route>
               </Route>
             </Routes>
           </BrowserRouter>
