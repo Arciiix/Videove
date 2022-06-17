@@ -18,4 +18,12 @@
 .media {
   border-radius: 8px;
   margin: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.color {
+  width: 95%;
+  height: 95%;
 }

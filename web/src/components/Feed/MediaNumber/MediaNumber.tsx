@@ -1,3 +1,4 @@
+import getFontColor from "../../../utils/getFontColor";
 import styles from "./MediaNumber.module.css";
 
 interface IMediaNumberProps {
@@ -7,7 +8,14 @@ interface IMediaNumberProps {
 
 function MediaNumber({ number, color }: IMediaNumberProps) {
   return (
-    <div className={styles.mediaNumber} style={{ backgroundColor: color }}>
+    <div
+      className={styles.mediaNumber}
+      style={{
+        backgroundColor: color,
+
+        color: getFontColor(color ?? "#808080"),
+      }}
+    >
       {number}
     </div>
   );

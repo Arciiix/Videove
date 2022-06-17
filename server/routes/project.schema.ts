@@ -22,7 +22,7 @@ const addProjectSchema = Joi.object({
       name: Joi.string().allow(null),
       number: Joi.number(),
       type: Joi.string()
-        .regex(/LOCAL|DROIDCAM|CUSTOM|AUDIO/)
+        .regex(/LOCAL|DROIDCAM|CUSTOM|AUDIO|COLOR/)
         .required(),
       media: Joi.object().allow(null),
       projectId: Joi.string(), //For update endpoints

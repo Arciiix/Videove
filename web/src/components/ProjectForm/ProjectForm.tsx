@@ -22,6 +22,7 @@ import {
 import { useMemo, useState } from "react";
 import { HexColorPicker } from "react-colorful";
 import {
+  ColorMedia,
   CustomMedia,
   DroidCam,
   IMedia,
@@ -148,6 +149,13 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
                 <Icon>{getIconForMediaType(MediaTypes.AUDIO)}</Icon>
                 <Typography>Audio</Typography>
               </MenuItem>
+              <MenuItem
+                classes={{ root: styles.flexInline }}
+                value={MediaTypes.COLOR}
+              >
+                <Icon>{getIconForMediaType(MediaTypes.COLOR)}</Icon>
+                <Typography>Color</Typography>
+              </MenuItem>
             </Select>
             <ListItemText>
               <TextField
@@ -243,6 +251,30 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
                     label="Preview by screen sharing"
                   />
                 </FormGroup>
+              )}
+
+              {e.type === MediaTypes.COLOR && (
+                <div
+                  className={styles.colorPicker}
+                  style={{
+                    backgroundColor: (e.media as ColorMedia).color ?? "#000000",
+                  }}
+                  onClick={(elem) => {
+                    setChangeColorFunction(() => (color: string) => {
+                      updateMedia(e, {
+                        ...e,
+                        media: {
+                          ...e.media,
+                          color,
+                        },
+                      });
+                    });
+
+                    setIsSelectingColor(true);
+                  }}
+                >
+                  Color
+                </div>
               )}
             </ListItemText>
 

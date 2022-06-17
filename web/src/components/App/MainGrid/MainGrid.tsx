@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { ReactElement, useCallback, useEffect, useMemo, useState } from "react";
 import ReactGridLayout from "react-grid-layout";
 import { useRecoilState, useRecoilValue } from "recoil";
 import isEditingDashboardState from "../../../recoil/is-editing-dashboard";
@@ -36,18 +36,24 @@ function MainGrid({ media }: IMainGridProps) {
     [media, width]
   );
 
-  const renderMedia = useMemo(() => {
-    return media.map((m: IMedia, index) => {
-      return (
-        <div key={`feed-${index}-${m.number}-${m.type}`}>
-          <Feed
-            data={m}
-            width={m.type.toString() === "AUDIO" ? "1px" : "400px"}
-            height={m.type.toString() === "AUDIO" ? "1px" : "250px"}
-          />
-        </div>
-      );
-    });
+  const renderMedia = useMemo((): JSX.Element[] => {
+    let mediaArr: JSX.Element[] = [];
+
+    mediaArr.push(
+      ...media.map((m: IMedia, index): JSX.Element => {
+        return (
+          <div key={`feed-${index}-${m.number}-${m.type}`}>
+            <Feed
+              data={m}
+              width={m.type.toString() === "AUDIO" ? "1px" : "400px"}
+              height={m.type.toString() === "AUDIO" ? "1px" : "250px"}
+            />
+          </div>
+        );
+      })
+    );
+
+    return mediaArr;
   }, [media]);
 
   useEffect(() => {

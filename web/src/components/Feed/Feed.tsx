@@ -1,7 +1,12 @@
 import Box from "@mui/material/Box";
 import { useContext, useEffect, useState } from "react";
 import ReactPlayer from "react-player";
-import { CustomMedia, IMedia, MediaTypes } from "../../types/Media.type";
+import {
+  ColorMedia,
+  CustomMedia,
+  IMedia,
+  MediaTypes,
+} from "../../types/Media.type";
 import Player from "./Player/Player";
 
 import styles from "./Feed.module.css";
@@ -84,7 +89,16 @@ function Feed({ data, width, height, hideIndicator = false }: IFeedProps) {
         width={width}
         height={height}
       >
-        <Player width={width} height={height} media={media} />
+        {(media.type as string) === "COLOR" ? (
+          <div
+            className={styles.color}
+            style={{
+              backgroundColor: (media.media as ColorMedia).color,
+            }}
+          />
+        ) : (
+          <Player width={width} height={height} media={media} />
+        )}
       </Box>
       <MediaNumber number={media.number} color={media.color ?? "#808080"} />
     </div>

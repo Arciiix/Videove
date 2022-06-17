@@ -1,11 +1,13 @@
 import {
   Android,
+  ColorLens,
   HelpCenter,
   MusicNote,
   MusicVideo,
 } from "@mui/icons-material";
 import {
   AudioMedia,
+  ColorMedia,
   CustomMedia,
   DroidCam,
   LocalMedia,
@@ -23,6 +25,8 @@ function getIconForMediaType(mediaType: MediaTypes): JSX.Element {
       return <HelpCenter />;
     case MediaTypes.AUDIO:
       return <MusicNote />;
+    case MediaTypes.COLOR:
+      return <ColorLens />;
     default:
       return <HelpCenter />;
   }
@@ -38,6 +42,8 @@ function getNewMediaObjForType(mediaType: MediaTypes): Media {
       return new CustomMedia(true);
     case MediaTypes.AUDIO:
       return new AudioMedia("", 0);
+    case MediaTypes.COLOR:
+      return new ColorMedia("#000000");
     default:
       return new CustomMedia(true);
   }

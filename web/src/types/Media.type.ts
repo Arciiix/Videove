@@ -3,6 +3,7 @@ enum MediaTypes {
   DROIDCAM = "DroidCam",
   CUSTOM = "Custom (manual)",
   AUDIO = "Audio",
+  COLOR = "Solid color",
 }
 
 type Medias = IMedia[];
@@ -49,5 +50,22 @@ class CustomMedia extends Media {
 
 class AudioMedia extends LocalMedia {}
 
-export { LocalMedia, DroidCam, CustomMedia, AudioMedia, Media, MediaTypes };
+class ColorMedia extends Media {
+  color: string;
+
+  constructor(color: string) {
+    super();
+    this.color = color;
+  }
+}
+
+export {
+  LocalMedia,
+  DroidCam,
+  CustomMedia,
+  AudioMedia,
+  ColorMedia,
+  Media,
+  MediaTypes,
+};
 export type { Medias, IMedia };
