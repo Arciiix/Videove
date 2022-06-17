@@ -2,6 +2,7 @@ import { ReactElement, useCallback, useEffect, useMemo, useState } from "react";
 import ReactGridLayout from "react-grid-layout";
 import { useRecoilState, useRecoilValue } from "recoil";
 import isEditingDashboardState from "../../../recoil/is-editing-dashboard";
+import isSmallLayoutState from "../../../recoil/is-small-layout";
 import layoutState from "../../../recoil/layout";
 import { IMedia, MediaTypes } from "../../../types/Media.type";
 import Feed from "../../Feed/Feed";
@@ -15,6 +16,7 @@ function MainGrid({ media }: IMainGridProps) {
     new Date().getTime()
   );
   const [layout, setLayout] = useRecoilState(layoutState);
+  const isSmallLayout = useRecoilValue(isSmallLayoutState);
   const [width, setWidth] = useState(0);
 
   const isEditingLayout = useRecoilValue(isEditingDashboardState);
@@ -24,16 +26,20 @@ function MainGrid({ media }: IMainGridProps) {
       media.forEach((media, index) => {
         newLayout.push({
           i: `feed-${index}-${media.number}-${media.type}`,
-          x: index % Math.floor(width / 400),
-          y: Math.floor(index / 3),
+          x: index % Math.floor(width / (isSmallLayout ? 200 : 400)),
+          y: Math.floor(
+            index / Math.floor(width / (isSmallLayout ? 200 : 400))
+          ),
           w: 1,
           h: 1,
         });
       });
 
+      console.log("Calculated layout");
+
       setLayout(newLayout);
     },
-    [media, width]
+    [media, width, isSmallLayout]
   );
 
   const renderMedia = useMemo((): JSX.Element[] => {
@@ -45,8 +51,20 @@ function MainGrid({ media }: IMainGridProps) {
           <div key={`feed-${index}-${m.number}-${m.type}`}>
             <Feed
               data={m}
-              width={m.type.toString() === "AUDIO" ? "1px" : "400px"}
-              height={m.type.toString() === "AUDIO" ? "1px" : "250px"}
+              width={
+                m.type.toString() === "AUDIO"
+                  ? "1px"
+                  : isSmallLayout
+                  ? "200px"
+                  : "400px"
+              }
+              height={
+                m.type.toString() === "AUDIO"
+                  ? "1px"
+                  : isSmallLayout
+                  ? "125px"
+                  : "250px"
+              }
             />
           </div>
         );
@@ -54,7 +72,7 @@ function MainGrid({ media }: IMainGridProps) {
     );
 
     return mediaArr;
-  }, [media]);
+  }, [media, isSmallLayout]);
 
   useEffect(() => {
     setLayoutEditTime(new Date().getTime());
@@ -73,11 +91,16 @@ function MainGrid({ media }: IMainGridProps) {
   useEffect(() => {
     window.addEventListener("resize", handleResize);
     const width = handleResize();
-    calculateLayout(width);
+    console.log(layout);
+    if (!layout) {
+      calculateLayout(width);
+    }
     return () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  console.log("layout", layout);
 
   console.log("is editing: ", isEditingLayout);
   return (
@@ -87,10 +110,13 @@ function MainGrid({ media }: IMainGridProps) {
       isDroppable={isEditingLayout}
       className="mainGrid"
       layout={layout}
-      cols={Math.floor(width / 400)}
-      rowHeight={350}
+      cols={Math.floor(width / (isSmallLayout ? 200 : 400))}
+      rowHeight={isSmallLayout ? 175 : 350}
       width={width}
       onLayoutChange={(layout) => {
+        if (!isEditingLayout) {
+          return;
+        }
         setLayout(layout);
       }}
     >

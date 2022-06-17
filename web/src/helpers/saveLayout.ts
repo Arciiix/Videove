@@ -7,7 +7,7 @@ async function saveLayout(
 ): Promise<void> {
   try {
     await axios.patch("/api/projects/update", {
-      projectId,
+      id: projectId,
       project: {
         layout,
       },
@@ -18,4 +18,21 @@ async function saveLayout(
   }
 }
 
-export default saveLayout;
+async function saveSmallLayout(
+  projectId: string,
+  isSmallLayout: boolean
+): Promise<void> {
+  try {
+    await axios.patch("/api/projects/update", {
+      id: projectId,
+      project: {
+        isSmallLayout,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    await toast.error("Error saving layout");
+  }
+}
+
+export { saveLayout, saveSmallLayout };

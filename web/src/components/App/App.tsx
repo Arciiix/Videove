@@ -12,6 +12,8 @@ import MainGrid from "./MainGrid/MainGrid";
 import currentActiveMediaState from "../../recoil/current-active-media";
 import isOnAirState from "../../recoil/on-air";
 import axios, { AxiosError } from "axios";
+import isSmallLayoutState from "../../recoil/is-small-layout";
+import layoutState from "../../recoil/layout";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -26,6 +28,8 @@ function App() {
   );
 
   const [project, setProject] = useState<IProject>({ name: "", media: [] });
+  const [isSmallLayout, setIsSmallLayout] = useRecoilState(isSmallLayoutState);
+  const [layout, setLayout] = useRecoilState(layoutState);
 
   const [isOnAir, setIsOnAir] = useRecoilState(isOnAirState);
   const navigate = useNavigate();
@@ -36,6 +40,11 @@ function App() {
       const projectRequest = await axios.get(`/api/projects/${id}`);
       const projectResponse = projectRequest.data;
       setProject(projectResponse.project);
+      setIsSmallLayout(!!projectResponse.project.isSmallLayout);
+      if (projectResponse.project.layout) {
+        setLayout(projectResponse.project.layout);
+      }
+
       setIsLoading(false);
       document.title = `${projectResponse.project.name} - Videove`;
     } catch (err: AxiosError | unknown) {

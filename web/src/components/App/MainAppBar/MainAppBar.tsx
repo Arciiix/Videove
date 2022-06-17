@@ -6,8 +6,9 @@ import Switch from "@mui/material/Switch";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { useRecoilState, useRecoilValue } from "recoil";
-import saveLayout from "../../../helpers/saveLayout";
+import { saveSmallLayout, saveLayout } from "../../../helpers/saveLayout";
 import isEditingDashboardState from "../../../recoil/is-editing-dashboard";
+import isSmallLayoutState from "../../../recoil/is-small-layout";
 import layoutState from "../../../recoil/layout";
 import useConfirm from "../../ConfirmationDialog/useConfirm";
 import HorizontalDivider from "../../HorizontalDivider/HorizontalDivider";
@@ -37,6 +38,7 @@ function MainAppBar({
     isEditingDashboardState
   );
   const layout = useRecoilValue(layoutState);
+  const [isSmallLayout, setIsSmallLayout] = useRecoilState(isSmallLayoutState);
 
   const handleEditingSwitchChange = async (
     val: React.ChangeEvent<HTMLInputElement>
@@ -50,6 +52,25 @@ function MainAppBar({
       if (!confirmed) return;
       await saveLayout(projectId, layout);
     }
+  };
+
+  const handleSmallLayoutSwitchChange = async (
+    val: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const confirmed = await confirm(
+      `Are you sure you want to ${
+        val.target.checked
+          ? "make the previews small"
+          : "turn off the small previews"
+      }?"`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    await saveSmallLayout(projectId, !val.target.checked);
+    setIsSmallLayout(!val.target.checked);
   };
 
   return (
@@ -71,15 +92,27 @@ function MainAppBar({
             <Typography variant="h5">{projectName}</Typography>
           </Box>
           <Box display="flex" alignItems={"center"}>
-            <Box display="flex" flexDirection={"column"}>
+            <Box display="flex" flexDirection={"row"}>
               <FormControlLabel
                 control={
                   <Switch
-                    value={isEditingDashboard}
+                    checked={isEditingDashboard}
                     onChange={handleEditingSwitchChange}
+                    inputProps={{ "aria-label": "controlled" }}
                   />
                 }
                 label={isEditingDashboard ? "Turn off to save" : "Edit layout"}
+                labelPlacement="bottom"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isSmallLayout}
+                    onChange={handleSmallLayoutSwitchChange}
+                    inputProps={{ "aria-label": "controlled" }}
+                  />
+                }
+                label={"Smaller previews"}
                 labelPlacement="bottom"
               />
             </Box>

@@ -13,6 +13,7 @@ const addProjectSchema = Joi.object({
   id: Joi.string(), //For update endpoints
   name: Joi.string().required(),
   layout: Joi.array().items(layoutSchema),
+  isSmallLayout: Joi.boolean().default(false),
   media: Joi.array().items(
     Joi.object({
       color: Joi.string()
@@ -39,10 +40,11 @@ const projectsWithoutMediaSchema = Joi.object({
   id: Joi.string(),
   name: Joi.string(),
   layout: Joi.array().items(layoutSchema),
+  isSmallLayout: Joi.boolean(),
 });
 
 const patchProjectSchema = Joi.object({
-  projectId: Joi.string(),
+  id: Joi.string(),
   project: projectsWithoutMediaSchema.required(),
 });
 

@@ -11,10 +11,11 @@ datasource db {
 }
 
 model Project {
-  id     String  @id @default(cuid())
-  name   String  @unique
-  layout Json?
-  media  Media[]
+  id            String  @id @default(cuid())
+  name          String  @unique
+  layout        Json?
+  isSmallLayout Boolean @default(false)
+  media         Media[]
 }
 
 model Media {
