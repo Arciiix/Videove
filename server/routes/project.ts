@@ -183,9 +183,9 @@ projectRouter.patch(
 );
 
 projectRouter.delete(
-  "/delete",
+  "/:delete",
   async (req: express.Request, res: express.Response) => {
-    if (!req.body.id) {
+    if (!req.params.delete) {
       res.status(404).send({ success: false, error: "Not found" });
       return;
     }
@@ -193,7 +193,7 @@ projectRouter.delete(
     //Check if the project even exists
     const project = await prisma.project.findFirst({
       where: {
-        id: req.body.id,
+        id: req.params.delete,
       },
     });
 

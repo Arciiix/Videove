@@ -6,7 +6,9 @@ import { toast } from "react-toastify";
 import { useRecoilState } from "recoil";
 import { io } from "socket.io-client";
 import OBSContext from "../../context/OBS.context";
+import getAllProjects from "../../helpers/getAllProjects";
 import obsStatusState from "../../recoil/obs-status";
+import projectsState from "../../recoil/projects";
 import socketIoState from "../../recoil/socketio";
 import { IProject } from "../../types/Project.type";
 import Loading from "../Loading/Loading";
@@ -26,7 +28,7 @@ function Home() {
 
   const [obsStatus, setObsStatus] = useRecoilState(obsStatusState);
   const [isLoading, setIsLoading] = useState(true);
-  const [projects, setProjects] = useState<IProject[]>([]);
+  const [projects, setProjects] = useRecoilState(projectsState);
 
   const [address, setAddress] = useState("localhost:4444");
   const [password, setPassword] = useState("");
@@ -47,16 +49,12 @@ function Home() {
 
   const getProjects = async () => {
     setIsLoading(true);
-    try {
-      const projectsReq = await axios.get(
-        "/api/projects/all?includeMedia=true"
-      );
-      const projectsResponse = await projectsReq.data;
-      setProjects(projectsResponse.projects);
-      setIsLoading(false);
-    } catch (err) {
-      console.error(err);
+    const projects: IProject[] | null = await getAllProjects();
+    if (!projects) {
       toast.error("Couldn't get projects");
+    } else {
+      setProjects(projects);
+      setIsLoading(false);
     }
   };
 

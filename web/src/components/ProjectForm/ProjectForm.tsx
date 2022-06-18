@@ -19,8 +19,11 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import axios, { AxiosError } from "axios";
 import { useMemo, useState } from "react";
 import { HexColorPicker } from "react-colorful";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import {
   ColorMedia,
   CustomMedia,
@@ -31,6 +34,7 @@ import {
   MediaTypes,
 } from "../../types/Media.type";
 import { IProject } from "../../types/Project.type";
+import getEnumKeyByEnumValue from "../../utils/getEnumKeyByEnumValue";
 import getFontColor from "../../utils/getFontColor";
 import {
   getIconForMediaType,
@@ -62,6 +66,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
   >((_) => {});
 
   const confirm = useConfirm();
+  const navigate = useNavigate();
 
   const [nameError, setNameError] = useState("");
 
@@ -411,10 +416,83 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
               media: media,
             };
 
+            const serializedProject = project;
+            serializedProject.media = serializedProject.media.map((e) => {
+              return {
+                ...e,
+                type: getEnumKeyByEnumValue(MediaTypes, e.type) as string,
+              };
+            });
+
             if (originalProject) {
-              console.log(`Update project`, project);
+              console.log(`Update project`, serializedProject);
+
+              try {
+                //TODO: Test it
+                const response = await axios.patch("/api/projects/update", {
+                  id: serializedProject.id,
+                  project: serializedProject,
+                });
+
+                //If the response is ok, update the project in the store
+                //TODO
+              } catch (err: AxiosError | unknown) {
+                if (axios.isAxiosError(err)) {
+                  if (err?.response?.status === 400) {
+                    toast.error(
+                      `Error validating: ${
+                        ((err as AxiosError)?.response?.data as any)?.error
+                      }`
+                    );
+                  } else if (err?.response?.status === 404) {
+                    setNameError("Project doesn't exist");
+                  } else {
+                    toast.error(
+                      `Error updating project: status ${
+                        (err as AxiosError)?.status
+                      } ${JSON.stringify((err as AxiosError)?.response?.data)}`
+                    );
+                  }
+                } else {
+                  toast.error(
+                    `Error updating project: ${(err as any).toString()}`
+                  );
+                }
+                console.error(err);
+              }
             } else {
-              console.log(`Create project`, project);
+              console.log(`Create project`, serializedProject);
+              try {
+                const response = await axios.post(
+                  "/api/projects/create",
+                  serializedProject
+                );
+                // Navigate to the home page
+                return navigate(`/`);
+              } catch (err: AxiosError | unknown) {
+                if (axios.isAxiosError(err)) {
+                  if (err?.response?.status === 400) {
+                    toast.error(
+                      `Error validating: ${
+                        ((err as AxiosError)?.response?.data as any)?.error
+                      }`
+                    );
+                  } else if (err?.response?.status === 409) {
+                    setNameError("Project already exists");
+                  } else {
+                    toast.error(
+                      `Error creating project: status ${
+                        (err as AxiosError)?.status
+                      } ${JSON.stringify((err as AxiosError)?.response?.data)}`
+                    );
+                  }
+                } else {
+                  toast.error(
+                    `Error creating project: ${(err as any).toString()}`
+                  );
+                }
+                console.error(err);
+              }
             }
           }}
         >

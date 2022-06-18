@@ -12,7 +12,7 @@ interface IMedia {
   number: number;
   color?: string;
   name?: string;
-  type: MediaTypes;
+  type: MediaTypes | string;
   media: Media;
 }
 
