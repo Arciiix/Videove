@@ -53,7 +53,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
   const [media, setMedia] = useState<Medias>([
     {
       number: 0,
-      name: "Output (don't change)",
+      name: "Output",
       type: MediaTypes.CUSTOM,
       media: new CustomMedia(true),
     },
@@ -191,6 +191,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
 
                   updateMedia(e, newMedia);
                 }}
+                inputProps={{ maxLength: 20 }}
                 fullWidth
                 margin="dense"
               />

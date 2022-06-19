@@ -111,7 +111,7 @@ function MainGrid({ media }: IMainGridProps) {
       className="mainGrid"
       layout={layout}
       cols={Math.floor(width / (isSmallLayout ? 200 : 400))}
-      rowHeight={isSmallLayout ? 200 : 350}
+      rowHeight={isSmallLayout ? 250 : 350}
       width={width}
       onLayoutChange={(layout) => {
         if (!isEditingLayout) {

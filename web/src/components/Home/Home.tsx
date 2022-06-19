@@ -84,7 +84,7 @@ function Home() {
       gap={2}
     >
       <Loading open={isLoading} />
-      <Logo full height="200px" />
+      <Logo full height="200px" dontClick />
 
       <Typography variant="h5">OBS socket info</Typography>
       <TextField

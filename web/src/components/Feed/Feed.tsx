@@ -101,6 +101,7 @@ function Feed({ data, width, height, hideIndicator = false }: IFeedProps) {
         )}
       </Box>
       <MediaNumber number={media.number} color={media.color ?? "#808080"} />
+      <span className={styles.name}>{media.name}</span>
     </div>
   );
 }

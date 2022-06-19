@@ -1,3 +1,6 @@
 .App-logo {
   object-fit: contain;
 }
+.pointer {
+  cursor: pointer;
+}

@@ -9,7 +9,7 @@ interface IVideoPlaceholderProps {
 function VideoPlaceholder({ width, height }: IVideoPlaceholderProps) {
   return (
     <div className={styles.placeholder} style={{ width, height }}>
-      <Logo width={width} height={height} full />
+      <Logo width={width} height={height} full dontClick />
     </div>
   );
 }

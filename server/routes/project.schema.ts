@@ -21,7 +21,7 @@ const addProjectSchema = Joi.object({
         .regex(/^#[A-Fa-f0-9]{6}/)
         .allow(null)
         .default("#808080"),
-      name: Joi.string().allow(null, ""),
+      name: Joi.string().allow(null, "").max(20),
       number: Joi.number(),
       type: Joi.string()
         .regex(/LOCAL|DROIDCAM|CUSTOM|AUDIO|COLOR/)
