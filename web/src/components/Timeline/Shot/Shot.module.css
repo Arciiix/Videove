@@ -1,0 +1,28 @@
+.timelineItem {
+  text-overflow: ellipsis;
+  word-wrap: normal;
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  height: 100%;
+  border-radius: 4px;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  transition: 0.2s all;
+}
+.timelineItem .mediaNumber {
+  font-size: 2.6em;
+}
+
+.mediaDescription {
+  height: 100%;
+  word-wrap: normal;
+  white-space: nowrap;
+  word-break: keep-all;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+}

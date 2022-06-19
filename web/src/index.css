@@ -12,3 +12,16 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+/* Styles for the app module */
+.mainAppBar {
+  height: 50px;
+}
+.mainGrid {
+  margin-bottom: calc(150px - 8px);
+}
+.timeline {
+  position: fixed;
+  bottom: 0;
+  height: 150px;
+}

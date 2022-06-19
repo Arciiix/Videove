@@ -86,7 +86,7 @@ function MainAppBar({
       <Toolbar>
         <Container
           maxWidth={false}
-          classes={{ root: styles.container }}
+          classes={{ root: `${styles.container} mainAppBar` }}
           className={styles.container}
         >
           <Box

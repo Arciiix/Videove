@@ -16,6 +16,7 @@ import isSmallLayoutState from "../../recoil/is-small-layout";
 import layoutState from "../../recoil/layout";
 import getProject from "../../helpers/getProject";
 import { Layout } from "react-grid-layout";
+import Timeline from "../Timeline/Timeline";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -148,6 +149,7 @@ function App() {
         isStreaming={obsRecordingStreamingStatus.streaming}
       />
       <MainGrid media={project.media} />
+      <Timeline totalLengthSeconds={2.2} /> {/* DEV */}
     </div>
   );
 }

@@ -1,0 +1,48 @@
+.wrapper {
+  background-color: hsl(0, 0%, 13%);
+  /* background-color: red; */
+  margin: 0;
+  width: 100%;
+}
+
+.timelineWrapper {
+  height: 100px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: hsl(0, 0%, 19%);
+  padding: 10px;
+}
+.cutLine {
+  margin-left: 4px;
+  --cutline-width: 4px;
+  height: 120%;
+  background-color: rgb(255, 0, 64);
+  position: relative;
+  z-index: 999;
+  width: var(--cutline-width);
+  left: var(--cutline-width);
+}
+.icon {
+  position: relative;
+  z-index: 999;
+  background-color: hsla(0, 0%, 19%, 0.7);
+}
+.timeline {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  position: relative;
+}
+
+.playbackStatus {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.nextCut {
+  margin-left: 8px;
+  font-weight: bold;
+}
