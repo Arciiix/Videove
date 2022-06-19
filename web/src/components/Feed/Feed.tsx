@@ -27,6 +27,9 @@ function Feed({ data, width, height, hideIndicator = false }: IFeedProps) {
   const [askingForScreenShare, setAskingForScreenShare] = useState(false);
   const obs = useContext(OBSContext);
   const currentActiveMedia = useRecoilValue(currentActiveMediaState);
+  const [playerKey, setPlayerKey] = useState(
+    `player${data.number}` + new Date()
+  );
 
   const askForScreenShare = async () => {
     if (askingForScreenShare) return; //One request at a time
@@ -58,6 +61,12 @@ function Feed({ data, width, height, hideIndicator = false }: IFeedProps) {
     }
   };
 
+  const handleRightClick = async () => {
+    setPlayerKey(`player${data.number}` + new Date());
+    await askForScreenShare();
+    setPlayerKey(`player${data.number}` + new Date());
+  };
+
   const switchMedia = () => {
     if (currentActiveMedia === data.number.toString()) {
       return;
@@ -77,7 +86,7 @@ function Feed({ data, width, height, hideIndicator = false }: IFeedProps) {
       onClick={switchMedia}
       onContextMenu={(e) => {
         e.preventDefault();
-        askForScreenShare();
+        handleRightClick();
       }}
     >
       <Box
@@ -97,7 +106,7 @@ function Feed({ data, width, height, hideIndicator = false }: IFeedProps) {
             }}
           />
         ) : (
-          <Player width={width} height={height} media={media} />
+          <Player key={playerKey} width={width} height={height} media={media} />
         )}
       </Box>
       <MediaNumber number={media.number} color={media.color ?? "#808080"} />
