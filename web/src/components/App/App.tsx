@@ -14,6 +14,8 @@ import isOnAirState from "../../recoil/on-air";
 import axios, { AxiosError } from "axios";
 import isSmallLayoutState from "../../recoil/is-small-layout";
 import layoutState from "../../recoil/layout";
+import getProject from "../../helpers/getProject";
+import { Layout } from "react-grid-layout";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -36,20 +38,13 @@ function App() {
   const { id } = useParams();
 
   const fetchProject = async (): Promise<void> => {
-    try {
-      const projectRequest = await axios.get(`/api/projects/${id}`);
-      const projectResponse = projectRequest.data;
-      setProject(projectResponse.project);
-      setIsSmallLayout(!!projectResponse.project.isSmallLayout);
-      if (projectResponse.project.layout) {
-        setLayout(projectResponse.project.layout);
-      }
-
-      setIsLoading(false);
-      document.title = `${projectResponse.project.name} - Videove`;
-    } catch (err: AxiosError | unknown) {
-      if (axios.isAxiosError(err)) {
-        if ((err as AxiosError)?.response?.status === 404) {
+    const projectResponse: {
+      project?: IProject;
+      error?: AxiosError | unknown;
+    } = await getProject(id as string);
+    if (projectResponse.error) {
+      if (axios.isAxiosError(projectResponse.error)) {
+        if ((projectResponse.error as AxiosError)?.response?.status === 404) {
           toast.error("Project not found");
           return navigate("/");
         } else {
@@ -58,7 +53,16 @@ function App() {
       } else {
         toast.error("Unexpected error");
       }
-      console.error(err);
+    } else {
+      setProject(projectResponse.project as IProject);
+      setIsSmallLayout(!!(projectResponse.project as IProject).isSmallLayout);
+      if ((projectResponse.project as IProject).layout) {
+        setLayout((projectResponse.project as IProject).layout as Layout[]);
+      }
+      setIsLoading(false);
+      document.title = `${
+        (projectResponse.project as IProject).name
+      } - Videove`;
     }
   };
 

@@ -20,7 +20,7 @@ import {
   Typography,
 } from "@mui/material";
 import axios, { AxiosError } from "axios";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { HexColorPicker } from "react-colorful";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -78,6 +78,21 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
 
     setMedia(newMedia);
   };
+
+  useEffect(() => {
+    if (originalProject) {
+      setName(originalProject.name);
+      setMedia(
+        originalProject.media.map((e) => {
+          return {
+            ...e,
+            type: MediaTypes[e.type as keyof typeof MediaTypes],
+          };
+        })
+      );
+      console.log(media);
+    }
+  }, []);
 
   const renderMedia = useMemo(() => {
     return media.map((e, index) => {
@@ -167,7 +182,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
                 className={styles.input}
                 variant="outlined"
                 label="Name"
-                value={e.name}
+                value={e.name ?? ""}
                 onChange={(elem) => {
                   const newMedia: IMedia = {
                     ...e,
@@ -185,7 +200,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
                   className={styles.input}
                   variant="outlined"
                   label="URL"
-                  value={(e.media as DroidCam).url}
+                  value={(e.media as DroidCam).url ?? ""}
                   onChange={(elem) => {
                     const newMedia = e;
                     (e.media as DroidCam).url = elem.target.value;
@@ -203,7 +218,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
                     className={styles.input}
                     variant="outlined"
                     label="Path"
-                    value={(e.media as LocalMedia).path}
+                    value={(e.media as LocalMedia).path ?? ""}
                     onChange={(elem) => {
                       const newMedia = e;
                       (e.media as LocalMedia).path = elem.target.value;
@@ -216,7 +231,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
                     className={styles.input}
                     variant="outlined"
                     label="Delay [s]"
-                    value={(e.media as LocalMedia).delayStringHelper}
+                    value={(e.media as LocalMedia).delayStringHelper ?? ""}
                     onChange={(elem) => {
                       if (!numericInputRegexp.test(elem.target.value)) return;
                       let newValue = elem.target.value;
@@ -264,6 +279,9 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
                   className={styles.colorPicker}
                   style={{
                     backgroundColor: (e.media as ColorMedia).color ?? "#000000",
+                    color: getFontColor(
+                      (e.media as ColorMedia).color ?? "#000000"
+                    ),
                   }}
                   onClick={(elem) => {
                     setChangeColorFunction(() => (color: string) => {
@@ -429,13 +447,15 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
 
               try {
                 //TODO: Test it
-                const response = await axios.patch("/api/projects/update", {
+                const response = await axios.put("/api/projects/update", {
                   id: serializedProject.id,
                   project: serializedProject,
                 });
 
-                //If the response is ok, update the project in the store
-                //TODO
+                toast.success("Project updated");
+
+                // Navigate to the home page
+                return navigate(`/`);
               } catch (err: AxiosError | unknown) {
                 if (axios.isAxiosError(err)) {
                   if (err?.response?.status === 400) {
@@ -467,6 +487,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
                   "/api/projects/create",
                   serializedProject
                 );
+                toast.success("Project created");
                 // Navigate to the home page
                 return navigate(`/`);
               } catch (err: AxiosError | unknown) {

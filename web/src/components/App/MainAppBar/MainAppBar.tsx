@@ -1,3 +1,5 @@
+import { Edit } from "@mui/icons-material";
+import { IconButton } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -5,6 +7,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
+import { useNavigate } from "react-router-dom";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { saveSmallLayout, saveLayout } from "../../../helpers/saveLayout";
 import isEditingDashboardState from "../../../recoil/is-editing-dashboard";
@@ -33,6 +36,7 @@ function MainAppBar({
   isStreaming,
 }: IMainAppBarProps) {
   const confirm = useConfirm();
+  const navigate = useNavigate();
 
   const [isEditingDashboard, setIsEditingDashboard] = useRecoilState(
     isEditingDashboardState
@@ -73,6 +77,10 @@ function MainAppBar({
     setIsSmallLayout(!val.target.checked);
   };
 
+  const handleEdit = () => {
+    return navigate(`/editProject/${projectId}`);
+  };
+
   return (
     <AppBar position="static">
       <Toolbar>
@@ -90,6 +98,9 @@ function MainAppBar({
           >
             <Logo height="30px" />
             <Typography variant="h5">{projectName}</Typography>
+            <IconButton onClick={handleEdit}>
+              <Edit />
+            </IconButton>
           </Box>
           <Box display="flex" alignItems={"center"}>
             <Box display="flex" flexDirection={"row"}>
