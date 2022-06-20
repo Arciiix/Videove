@@ -1,4 +1,4 @@
-import { Edit } from "@mui/icons-material";
+import { Add, Edit } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -7,8 +7,11 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
+import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useRecoilState, useRecoilValue } from "recoil";
+import OBSContext from "../../../context/OBS.context";
 import { saveSmallLayout, saveLayout } from "../../../helpers/saveLayout";
 import isEditingDashboardState from "../../../recoil/is-editing-dashboard";
 import isSmallLayoutState from "../../../recoil/is-small-layout";
@@ -43,6 +46,8 @@ function MainAppBar({
   );
   const layout = useRecoilValue(layoutState);
   const [isSmallLayout, setIsSmallLayout] = useRecoilState(isSmallLayoutState);
+
+  const obs = useContext(OBSContext);
 
   const handleEditingSwitchChange = async (
     val: React.ChangeEvent<HTMLInputElement>

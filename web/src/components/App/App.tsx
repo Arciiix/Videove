@@ -68,18 +68,19 @@ function App() {
   };
 
   const getObsRecordingStreamingStatus = async () => {
-    const streamingStatus = await obs.send("GetStreamingStatus");
+    const streamingStatus = await obs.call("GetStreamStatus");
+    const recordingStatus = await obs.call("GetRecordStatus");
 
     setObsRecordingStreamingStatus({
-      recording: streamingStatus.recording,
-      streaming: streamingStatus.streaming,
+      recording: recordingStatus.outputActive,
+      streaming: streamingStatus.outputActive,
     });
   };
 
   const getObsCurrentScene = async () => {
-    const scene = await obs.send("GetCurrentScene");
+    const scene = await obs.call("GetCurrentProgramScene");
 
-    setCurrentActiveMedia(scene.name);
+    setCurrentActiveMedia(scene.currentProgramSceneName);
   };
 
   useEffect(() => {
@@ -98,43 +99,25 @@ function App() {
     getObsRecordingStreamingStatus();
     getObsCurrentScene();
 
-    obs.on("RecordingStarted", () => {
+    obs.on("RecordStateChanged", (state) => {
       setObsRecordingStreamingStatus((prev) => {
         return {
           streaming: prev.streaming,
-          recording: true,
+          recording: state.outputActive,
         };
       });
     });
-
-    obs.on("RecordingStopped", () => {
-      setObsRecordingStreamingStatus((prev) => {
-        return {
-          streaming: prev.streaming,
-          recording: false,
-        };
-      });
-    });
-
-    obs.on("StreamStarted", () => {
+    obs.on("StreamStateChanged", (state) => {
       setObsRecordingStreamingStatus((prev) => {
         return {
           recording: prev.recording,
-          streaming: true,
+          streaming: state.outputActive,
         };
       });
     });
 
-    obs.on("StreamStopped", () => {
-      setObsRecordingStreamingStatus((prev) => {
-        return {
-          recording: prev.recording,
-          streaming: false,
-        };
-      });
-    });
-    obs.on("SwitchScenes", (data) => {
-      setCurrentActiveMedia(data["scene-name"]);
+    obs.on("CurrentProgramSceneChanged", (data) => {
+      setCurrentActiveMedia(data.sceneName);
     });
   }, []);
 

@@ -30,18 +30,18 @@ function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [projects, setProjects] = useRecoilState(projectsState);
 
-  const [address, setAddress] = useState("localhost:4444");
+  const [address, setAddress] = useState("ws://localhost:4455");
   const [password, setPassword] = useState("");
 
   const connect = async () => {
     setIsLoading(true);
     try {
-      await obs.connect({ address: address, password: password });
+      await obs.connect(address, password);
       setObsStatus(true);
       toast.success("Connected successfully");
     } catch (err: any) {
       console.error(err);
-      toast.error(err?.error || "Unexpected error");
+      toast.error(err?.message || "Unexpected error");
       setObsStatus(false);
     }
     setIsLoading(false);

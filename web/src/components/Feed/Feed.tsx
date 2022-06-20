@@ -71,8 +71,8 @@ function Feed({ data, width, height, hideIndicator = false }: IFeedProps) {
     if (currentActiveMedia === data.number.toString()) {
       return;
     }
-    obs.send("SetCurrentScene", {
-      "scene-name": data.number.toString(),
+    obs.call("SetCurrentProgramScene", {
+      sceneName: data.number.toString(),
     });
   };
 
