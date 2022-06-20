@@ -18,6 +18,7 @@ import OBSContext from "./context/OBS.context";
 import obs from "./obs";
 import MediaOutput from "./components/MediaOutput/MediaOutput";
 import EditProject from "./components/EditProject/EditProject";
+import Logo from "./components/Logo/Logo";
 
 const darkTheme = createTheme({
   palette: {
@@ -56,6 +57,7 @@ root.render(
                 <Route path=":id" element={<App />} />
               </Route>
               <Route path="output">
+                <Route path="logo" element={<Logo full width="100%" />} />
                 <Route path=":project">
                   <Route
                     path=":media/:width/:height"

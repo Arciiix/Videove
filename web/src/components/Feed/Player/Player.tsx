@@ -21,11 +21,12 @@ interface IPlayerProps {
   width: string;
   height: string;
   media: IMedia;
+  fullSize?: boolean;
 }
 
 type PlayerURL = string | MediaStream;
 
-function Player({ width, height, media }: IPlayerProps) {
+function Player({ width, height, media, fullSize }: IPlayerProps) {
   const playerRef = useRef(null);
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -121,8 +122,16 @@ function Player({ width, height, media }: IPlayerProps) {
       <ReactPlayer
         ref={playerRef}
         url={url}
-        width={"95%"}
-        height={"95%"}
+        width={fullSize ? "100%" : "95%"}
+        height={fullSize ? "100%" : "95%"}
+        style={
+          fullSize
+            ? {
+                margin: 0,
+                padding: 0,
+              }
+            : {}
+        }
         controls={false}
         playing={isPlaying}
         loop={false}

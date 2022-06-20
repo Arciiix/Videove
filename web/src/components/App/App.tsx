@@ -127,6 +127,7 @@ function App() {
       <MainAppBar
         projectId={project.id ?? ""}
         projectName={project.name}
+        media={project.media}
         isOnAir={isOnAir}
         isRecording={obsRecordingStreamingStatus.recording}
         isStreaming={obsRecordingStreamingStatus.streaming}

@@ -80,6 +80,7 @@ function MediaOutput() {
       width={(width as string) + "px"}
       height={(height as string) + "px"}
       media={mediaObj as IMedia}
+      fullSize
     />
   );
 }

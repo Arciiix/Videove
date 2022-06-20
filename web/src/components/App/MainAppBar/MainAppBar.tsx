@@ -12,10 +12,12 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useRecoilState, useRecoilValue } from "recoil";
 import OBSContext from "../../../context/OBS.context";
+import createScenes from "../../../helpers/createScenes";
 import { saveSmallLayout, saveLayout } from "../../../helpers/saveLayout";
 import isEditingDashboardState from "../../../recoil/is-editing-dashboard";
 import isSmallLayoutState from "../../../recoil/is-small-layout";
 import layoutState from "../../../recoil/layout";
+import { IMedia } from "../../../types/Media.type";
 import useConfirm from "../../ConfirmationDialog/useConfirm";
 import HorizontalDivider from "../../HorizontalDivider/HorizontalDivider";
 import Indicator from "../../Indicator/Indicator";
@@ -26,6 +28,7 @@ import styles from "./MainAppBar.module.css";
 interface IMainAppBarProps {
   projectId: string;
   projectName: string;
+  media: IMedia[];
   isOnAir: boolean;
   isRecording: boolean;
   isStreaming: boolean;
@@ -34,6 +37,7 @@ interface IMainAppBarProps {
 function MainAppBar({
   projectId,
   projectName,
+  media,
   isOnAir,
   isRecording,
   isStreaming,
@@ -84,6 +88,18 @@ function MainAppBar({
 
   const handleEdit = () => {
     return navigate(`/editProject/${projectId}`);
+  };
+
+  const handleAddScenesClick = async () => {
+    const confirmed = await confirm(
+      `Are you sure you want to create corresponding scenes in the OBS?"`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    await createScenes(obs, projectName, projectId, media);
   };
 
   return (
@@ -138,6 +154,13 @@ function MainAppBar({
               <Indicator status={isRecording} description="RECORDING" />
               <HorizontalDivider />
               <Indicator status={isStreaming} description="STREAMING" />
+              <HorizontalDivider />
+              <IconButton
+                aria-label="Add scenes to OBS"
+                onClick={handleAddScenesClick}
+              >
+                <Add />
+              </IconButton>
             </Box>
           </Box>
         </Container>
