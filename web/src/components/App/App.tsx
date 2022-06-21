@@ -133,7 +133,7 @@ function App() {
         isStreaming={obsRecordingStreamingStatus.streaming}
       />
       <MainGrid media={project.media} />
-      <Timeline totalLengthSeconds={2.2} /> {/* DEV */}
+      <Timeline />
     </div>
   );
 }
