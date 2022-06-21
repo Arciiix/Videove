@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import React, { useContext } from "react";
 import ActiveShotContext from "../../../context/ActiveShot.context";
 import { IShot } from "../../../types/Shot.type";
 import getFontColor from "../../../utils/getFontColor";
@@ -8,12 +8,14 @@ interface IShotProps {
   shot: IShot;
   currentSecondsToWidthMultiplier: number;
   selfIndex: number;
+  handleClick: (e: React.MouseEvent) => Promise<void>;
 }
 
 function Shot({
   shot,
   currentSecondsToWidthMultiplier,
   selfIndex,
+  handleClick,
 }: IShotProps) {
   const activeShotIndex = useContext(ActiveShotContext);
 
@@ -28,6 +30,7 @@ function Shot({
         width: `${shot.durationSeconds * currentSecondsToWidthMultiplier}px`,
         color: getFontColor(shot.color ?? "#808080"),
       }}
+      onClick={handleClick}
     >
       <div
         className={styles.mediaNumber}

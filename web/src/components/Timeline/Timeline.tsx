@@ -15,6 +15,7 @@ import OBSContext from "../../context/OBS.context";
 import { IShot } from "../../types/Shot.type";
 import getClosestElement from "../../utils/getClosestElement";
 import { secondsTomm_ss_ms } from "../../utils/timeFormatter";
+import EditShot from "./EditShot/EditShot";
 import Shot from "./Shot/Shot";
 import styles from "./Timeline.module.css";
 
@@ -27,6 +28,10 @@ function Timeline({}: ITimelineProps) {
   const [activeShotIndex, setActiveShotIndex] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  const [currentEditedShot, setCurrentEditedShot] = useState<IShot | null>(
+    null
+  );
+
   const obs = useContext(OBSContext);
 
   // How many pixels per second of the timeline
@@ -34,6 +39,19 @@ function Timeline({}: ITimelineProps) {
     useState(100);
 
   const [shots, setShots] = useState<IShot[]>([]);
+
+  const editShot = async (shot: IShot): Promise<void> => {
+    setCurrentEditedShot(shot);
+  };
+
+  const handleShotEditClose = (): void => {
+    setCurrentEditedShot(null);
+  };
+  const handleShotEditSave = async (newShot: IShot): Promise<void> => {
+    console.log("SAVE SHOT", currentEditedShot);
+    //TODO: Save shot
+    setCurrentEditedShot(null);
+  };
 
   const renderShots = useMemo(() => {
     return shots.map((shot, index) => {
@@ -49,6 +67,7 @@ function Timeline({}: ITimelineProps) {
           selfIndex={index}
           shot={shot}
           currentSecondsToWidthMultiplier={currentSecondsToWidthMultiplier}
+          handleClick={(_) => editShot(shot)}
         />
       );
     });
@@ -277,6 +296,11 @@ function Timeline({}: ITimelineProps) {
 
   return (
     <ActiveShotContext.Provider value={activeShotIndex}>
+      <EditShot
+        shot={currentEditedShot}
+        handleSave={handleShotEditSave}
+        handleClose={handleShotEditClose}
+      />
       <Box className={`${styles.wrapper} timeline`}>
         <div
           className={styles.timelineWrapper}
