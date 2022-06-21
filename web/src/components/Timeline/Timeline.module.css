@@ -12,6 +12,8 @@
   align-items: center;
   background-color: hsl(0, 0%, 19%);
   padding: 10px;
+  cursor: grab;
+  user-select: none;
 }
 .cutLine {
   margin-left: 4px;

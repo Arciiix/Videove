@@ -25,6 +25,7 @@ function Timeline({}: ITimelineProps) {
   const [currPosition, setCurrPosition] = useState(0);
   const [totalLengthSeconds, setTotalLengthSeconds] = useState(0);
   const [activeShotIndex, setActiveShotIndex] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const obs = useContext(OBSContext);
 
@@ -203,12 +204,34 @@ function Timeline({}: ITimelineProps) {
 
     document.addEventListener("wheel", handleWheel);
     document.addEventListener("keydown", handleKeydown);
-
     return () => {
       document.removeEventListener("wheel", handleWheel);
       document.removeEventListener("keydown", handleKeydown);
     };
   }, [isPlaying]);
+
+  useEffect(() => {
+    let prevXPosition: number;
+    const handleDragging = (e: MouseEvent) => {
+      if (!prevXPosition) {
+        prevXPosition = e.clientX;
+      }
+      setCurrPosition((prevPosition) => {
+        const newPosition = prevPosition + (prevXPosition - e.clientX) / 10;
+        if (newPosition > totalLengthSeconds) return totalLengthSeconds;
+        if (newPosition <= 0) return 0;
+        return prevPosition + (prevXPosition - e.clientX) / 10;
+      });
+      prevXPosition = e.clientX;
+    };
+    if (isDragging && !isPlaying) {
+      window.addEventListener("mousemove", handleDragging);
+    }
+
+    return () => {
+      window.removeEventListener("mousemove", handleDragging);
+    };
+  }, [isDragging, isPlaying]);
 
   useEffect(() => {
     //DEV TODO
@@ -255,7 +278,11 @@ function Timeline({}: ITimelineProps) {
   return (
     <ActiveShotContext.Provider value={activeShotIndex}>
       <Box className={`${styles.wrapper} timeline`}>
-        <Box className={styles.timelineWrapper}>
+        <div
+          className={styles.timelineWrapper}
+          onMouseDown={() => setIsDragging(true)}
+          onMouseUp={() => setIsDragging(false)}
+        >
           <LiveTv classes={{ root: styles.icon }} />
           <div className={styles.cutLine}></div>
           <div
@@ -268,7 +295,7 @@ function Timeline({}: ITimelineProps) {
           >
             {renderShots}
           </div>
-        </Box>
+        </div>
         <Box className={styles.playbackStatus}>
           <IconButton onClick={() => handleZoomOut()}>
             <ZoomOut />
