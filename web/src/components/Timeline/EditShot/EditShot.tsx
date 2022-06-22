@@ -10,11 +10,17 @@ import { IShot } from "../../../types/Shot.type";
 
 interface IEditShotProps {
   shot: IShot | null;
+  shotIndex: number;
   handleClose: () => void;
   handleSave: (shot: IShot) => void | Promise<void>;
 }
 
-function EditShot({ shot, handleClose, handleSave }: IEditShotProps) {
+function EditShot({
+  shot,
+  shotIndex,
+  handleClose,
+  handleSave,
+}: IEditShotProps) {
   const [shotName, setShotName] = useState("");
 
   useEffect(() => {
@@ -23,7 +29,11 @@ function EditShot({ shot, handleClose, handleSave }: IEditShotProps) {
   return (
     <Dialog open={!!shot} onClose={handleClose}>
       <DialogTitle>
-        Edit shot name {shot?.mediaNumber ? "of media " + shot.mediaNumber : ""}
+        {shot
+          ? `Edit shot ${shotIndex} name ${
+              shot?.mediaNumber ? "of media " + shot.mediaNumber : ""
+            }`
+          : `Please wait...`}
       </DialogTitle>
       <DialogContent>
         <TextField

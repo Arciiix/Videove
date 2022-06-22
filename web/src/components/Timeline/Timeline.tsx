@@ -298,6 +298,7 @@ function Timeline({}: ITimelineProps) {
     <ActiveShotContext.Provider value={activeShotIndex}>
       <EditShot
         shot={currentEditedShot}
+        shotIndex={currentEditedShot ? shots.indexOf(currentEditedShot) : -1}
         handleSave={handleShotEditSave}
         handleClose={handleShotEditClose}
       />
