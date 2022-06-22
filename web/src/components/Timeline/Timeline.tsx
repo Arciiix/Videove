@@ -16,6 +16,7 @@ import ActiveShotContext from "../../context/ActiveShot.context";
 import OBSContext from "../../context/OBS.context";
 import handleMediaChange from "../../helpers/handleMediaChange";
 import currentShotsState from "../../recoil/current-shots";
+import isEditingShotsState from "../../recoil/is-editing-shots";
 import { IMedia } from "../../types/Media.type";
 import { IAddedShot, IShot } from "../../types/Shot.type";
 import getClosestElement from "../../utils/getClosestElement";
@@ -40,6 +41,8 @@ function Timeline({ media }: ITimelineProps) {
   const [currentEditedShot, setCurrentEditedShot] = useState<IShot | null>(
     null
   );
+  const [isEditingShots, setIsEditingShots] =
+    useRecoilState(isEditingShotsState);
 
   const obs = useContext(OBSContext);
   const confirm = useConfirm();
@@ -334,13 +337,15 @@ function Timeline({ media }: ITimelineProps) {
             )
           ) {
             handleMediaChange(obs, e.key);
-            addShotToTimeline({
-              mediaNumber: parseInt(e.key),
-              color: media.find(
-                (element) => element.number.toString() === e.key.toString()
-              )?.color,
-              name: "",
-            });
+            if (isEditingShots) {
+              addShotToTimeline({
+                mediaNumber: parseInt(e.key),
+                color: media.find(
+                  (element) => element.number.toString() === e.key.toString()
+                )?.color,
+                name: "",
+              });
+            }
           }
       }
     };
@@ -351,7 +356,7 @@ function Timeline({ media }: ITimelineProps) {
       document.removeEventListener("wheel", handleWheel);
       document.removeEventListener("keydown", handleKeydown);
     };
-  }, [isPlaying]);
+  }, [isPlaying, isEditingShots]);
 
   useEffect(() => {
     let prevXPosition: number;
