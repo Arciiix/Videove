@@ -5,5 +5,7 @@ interface IShot {
   delaySeconds: number;
   durationSeconds: number;
 }
+type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+type IAddedShot = Optional<IShot, "durationSeconds" | "delaySeconds">;
 
-export type { IShot };
+export type { IShot, IAddedShot };

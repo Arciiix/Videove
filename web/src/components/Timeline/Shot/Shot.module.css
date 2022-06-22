@@ -10,7 +10,7 @@
   margin: 0;
   padding: 0;
   position: relative;
-  transition: 0.2s all;
+  transition: 0.2s transform;
 }
 .timelineItem .mediaNumber {
   font-size: 2.6em;

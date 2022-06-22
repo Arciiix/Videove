@@ -1,3 +1,4 @@
+import { Delete } from "@mui/icons-material";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -8,11 +9,14 @@ import TextField from "@mui/material/TextField";
 import { useEffect, useState } from "react";
 import { IShot } from "../../../types/Shot.type";
 
+import styles from "./EditShot.module.css";
+
 interface IEditShotProps {
   shot: IShot | null;
   shotIndex: number;
   handleClose: () => void;
   handleSave: (shot: IShot) => void | Promise<void>;
+  handleDelete: (shot: IShot) => void | Promise<void>;
 }
 
 function EditShot({
@@ -20,6 +24,7 @@ function EditShot({
   shotIndex,
   handleClose,
   handleSave,
+  handleDelete,
 }: IEditShotProps) {
   const [shotName, setShotName] = useState("");
 
@@ -30,7 +35,7 @@ function EditShot({
     <Dialog open={!!shot} onClose={handleClose}>
       <DialogTitle>
         {shot
-          ? `Edit shot ${shotIndex} name ${
+          ? `Edit shot ${shotIndex} ${
               shot?.mediaNumber ? "of media " + shot.mediaNumber : ""
             }`
           : `Please wait...`}
@@ -45,6 +50,15 @@ function EditShot({
           fullWidth
           variant="standard"
         />
+        <div className={styles.spacing}></div>
+        <Button
+          variant="outlined"
+          fullWidth
+          onClick={() => handleDelete(shot as IShot)}
+        >
+          <Delete />
+          Delete
+        </Button>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>

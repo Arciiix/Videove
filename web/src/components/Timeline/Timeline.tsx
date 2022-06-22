@@ -10,18 +10,27 @@ import {
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
+import { useRecoilState } from "recoil";
 import ActiveShotContext from "../../context/ActiveShot.context";
 import OBSContext from "../../context/OBS.context";
-import { IShot } from "../../types/Shot.type";
+import handleMediaChange from "../../helpers/handleMediaChange";
+import currentShotsState from "../../recoil/current-shots";
+import { IMedia } from "../../types/Media.type";
+import { IAddedShot, IShot } from "../../types/Shot.type";
 import getClosestElement from "../../utils/getClosestElement";
+import getState from "../../utils/getState";
 import { secondsTomm_ss_ms } from "../../utils/timeFormatter";
+import useConfirm from "../ConfirmationDialog/useConfirm";
 import EditShot from "./EditShot/EditShot";
 import Shot from "./Shot/Shot";
 import styles from "./Timeline.module.css";
 
-interface ITimelineProps {}
+interface ITimelineProps {
+  media: IMedia[];
+}
 
-function Timeline({}: ITimelineProps) {
+function Timeline({ media }: ITimelineProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currPosition, setCurrPosition] = useState(0);
   const [totalLengthSeconds, setTotalLengthSeconds] = useState(0);
@@ -33,12 +42,13 @@ function Timeline({}: ITimelineProps) {
   );
 
   const obs = useContext(OBSContext);
+  const confirm = useConfirm();
 
   // How many pixels per second of the timeline
   const [currentSecondsToWidthMultiplier, setCurrentSecondsToWidthMultiplier] =
     useState(100);
 
-  const [shots, setShots] = useState<IShot[]>([]);
+  const [shots, setShots] = useRecoilState(currentShotsState);
 
   const editShot = async (shot: IShot): Promise<void> => {
     setCurrentEditedShot(shot);
@@ -50,6 +60,53 @@ function Timeline({}: ITimelineProps) {
   const handleShotEditSave = async (newShot: IShot): Promise<void> => {
     console.log("SAVE SHOT", currentEditedShot);
     //TODO: Save shot
+    setCurrentEditedShot(null);
+  };
+  const handleShotDelete = async (shot: IShot): Promise<void> => {
+    if (shots.length <= 1) {
+      toast.warning("You cannot delete the only media left!");
+      return;
+    }
+    const confirmed = await confirm(
+      `Do you want to delete media ${shot.mediaNumber}'s shot?`
+    );
+    if (!confirmed) {
+      setCurrentEditedShot(null);
+      return;
+    }
+
+    console.log("DELETE SHOT", currentEditedShot);
+    //TODO: Delete shot
+
+    let newShots = [...shots];
+    const oldIndex = newShots.findIndex(
+      (e) => e.delaySeconds === shot.delaySeconds
+    );
+
+    //Remove the old shot and fix the previous one's duration
+    newShots.splice(oldIndex, 1);
+
+    if (oldIndex === 0) {
+      newShots[0] = {
+        ...newShots[0],
+        delaySeconds: 0,
+        durationSeconds: newShots?.[1]?.delaySeconds || totalLengthSeconds,
+      };
+    } else if (oldIndex === shots.length - 1) {
+      newShots[newShots.length - 1] = {
+        ...newShots[newShots.length - 1],
+        durationSeconds:
+          totalLengthSeconds - newShots[newShots.length - 1].delaySeconds,
+      };
+    } else {
+      newShots[oldIndex - 1] = {
+        ...newShots[oldIndex - 1],
+        durationSeconds:
+          newShots[oldIndex].delaySeconds - newShots[oldIndex - 1].delaySeconds,
+      };
+    }
+    setShots(newShots);
+
     setCurrentEditedShot(null);
   };
 
@@ -122,8 +179,62 @@ function Timeline({}: ITimelineProps) {
   const handleShot = async (shot: IShot) => {
     console.log("SHOT", shot);
 
-    await obs.call("SetCurrentProgramScene", {
-      sceneName: shot.mediaNumber.toString(),
+    await handleMediaChange(obs, shot.mediaNumber.toString());
+  };
+
+  const addShotToTimeline = async (shot: IAddedShot) => {
+    let currPosition: number = await getState(setCurrPosition);
+    let totalLengthSeconds = await getState(setTotalLengthSeconds);
+
+    console.log(currPosition);
+    setShots((prevShots) => {
+      let newShots = [...prevShots];
+      //Take the first shot with the delay higher than the inserted one. Insert the new shot before it.
+      let isLast = false;
+      let insertShotIndex = prevShots.findIndex(
+        (element) => element.delaySeconds > currPosition
+      );
+      if (insertShotIndex < 0) {
+        insertShotIndex = prevShots.length;
+        isLast = true;
+      }
+      console.log("insert shot index", insertShotIndex);
+
+      if (isLast) {
+        console.log("IS LAST");
+        shot.durationSeconds = totalLengthSeconds - currPosition;
+      } else {
+        //Calculate the shot duration
+        let nextShot = prevShots[insertShotIndex];
+        console.log("NEXT", nextShot);
+        if (nextShot) {
+          console.log("THAT ONE");
+          shot.durationSeconds = nextShot.delaySeconds - currPosition;
+        } else {
+          console.error(`Couldn't find the next shot`);
+          toast.error(`Couldn't find the next shot`);
+        }
+      }
+
+      shot.delaySeconds = currPosition;
+
+      newShots.splice(insertShotIndex, 0, shot as IShot);
+
+      //If the previous shot exists, change its duration to fit the new shot
+      let prevShot = newShots[insertShotIndex - 1];
+      if (prevShot) {
+        newShots[insertShotIndex - 1] = {
+          ...newShots[insertShotIndex - 1],
+          durationSeconds: currPosition - prevShot.delaySeconds,
+        };
+      }
+
+      console.log(shot);
+      console.log(newShots);
+
+      console.log(`Shot at ${insertShotIndex}`);
+
+      return newShots;
     });
   };
 
@@ -217,7 +328,20 @@ function Timeline({}: ITimelineProps) {
           handlePlaybackStatusChange();
           break;
         default:
-          return;
+          if (
+            media.find(
+              (elem: IMedia) => elem.number.toString() === e.key.toString()
+            )
+          ) {
+            handleMediaChange(obs, e.key);
+            addShotToTimeline({
+              mediaNumber: parseInt(e.key),
+              color: media.find(
+                (element) => element.number.toString() === e.key.toString()
+              )?.color,
+              name: "",
+            });
+          }
       }
     };
 
@@ -301,6 +425,7 @@ function Timeline({}: ITimelineProps) {
         shotIndex={currentEditedShot ? shots.indexOf(currentEditedShot) : -1}
         handleSave={handleShotEditSave}
         handleClose={handleShotEditClose}
+        handleDelete={handleShotDelete}
       />
       <Box className={`${styles.wrapper} timeline`}>
         <div

@@ -133,7 +133,7 @@ function App() {
         isStreaming={obsRecordingStreamingStatus.streaming}
       />
       <MainGrid media={project.media} />
-      <Timeline />
+      <Timeline media={project.media} />
     </div>
   );
 }

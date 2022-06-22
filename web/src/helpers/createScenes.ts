@@ -1,6 +1,7 @@
 import OBSWebSocket from "obs-websocket-js";
 import { toast } from "react-toastify";
 import { IMedia } from "../types/Media.type";
+import handleMediaChange from "./handleMediaChange";
 
 async function createScenes(
   obs: OBSWebSocket,
@@ -80,9 +81,7 @@ async function createScenes(
     });
     console.log(createScene);
 
-    await obs.call("SetCurrentProgramScene", {
-      sceneName,
-    });
+    await handleMediaChange(obs, sceneName);
 
     const transitionChange = await obs.call("SetCurrentSceneTransition", {
       transitionName: "Cut",

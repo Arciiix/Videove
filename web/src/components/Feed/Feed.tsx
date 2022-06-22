@@ -15,6 +15,7 @@ import MediaNumber from "./MediaNumber/MediaNumber";
 import currentActiveMediaState from "../../recoil/current-active-media";
 import { useRecoilValue } from "recoil";
 import OBSContext from "../../context/OBS.context";
+import handleMediaChange from "../../helpers/handleMediaChange";
 
 interface IFeedProps {
   data: IMedia;
@@ -71,9 +72,7 @@ function Feed({ data, width, height, hideIndicator = false }: IFeedProps) {
     if (currentActiveMedia === data.number.toString()) {
       return;
     }
-    obs.call("SetCurrentProgramScene", {
-      sceneName: data.number.toString(),
-    });
+    handleMediaChange(obs, data.number.toString());
   };
 
   useEffect(() => {

@@ -15,6 +15,7 @@ import OBSContext from "../../../context/OBS.context";
 import createScenes from "../../../helpers/createScenes";
 import { saveSmallLayout, saveLayout } from "../../../helpers/saveLayout";
 import isEditingDashboardState from "../../../recoil/is-editing-dashboard";
+import isEditingShotsState from "../../../recoil/is-editing-shots";
 import isSmallLayoutState from "../../../recoil/is-small-layout";
 import layoutState from "../../../recoil/layout";
 import { IMedia } from "../../../types/Media.type";
@@ -50,6 +51,8 @@ function MainAppBar({
   );
   const layout = useRecoilValue(layoutState);
   const [isSmallLayout, setIsSmallLayout] = useRecoilState(isSmallLayoutState);
+  const [isEditingShots, setIsEditingShots] =
+    useRecoilState(isEditingShotsState);
 
   const obs = useContext(OBSContext);
 
@@ -102,6 +105,12 @@ function MainAppBar({
     await createScenes(obs, projectName, projectId, media);
   };
 
+  const handleIsEditingShotsChange = async (
+    val: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setIsEditingShots(val.target.checked);
+  };
+
   return (
     <AppBar position="static">
       <Toolbar>
@@ -128,9 +137,18 @@ function MainAppBar({
               <FormControlLabel
                 control={
                   <Switch
+                    checked={isEditingShots}
+                    onChange={handleIsEditingShotsChange}
+                  />
+                }
+                label={"Editing shots"}
+                labelPlacement="bottom"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
                     checked={isEditingDashboard}
                     onChange={handleEditingSwitchChange}
-                    inputProps={{ "aria-label": "controlled" }}
                   />
                 }
                 label={isEditingDashboard ? "Turn off to save" : "Edit layout"}
