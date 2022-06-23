@@ -1,3 +1,4 @@
+//Get closest larger or equal element (or, if doesn't exist, the closest smaller one)
 function getClosestElement(arr: number[], number: number): number {
   let closest = arr.find((e) => e >= number) as number;
   if (!closest) {

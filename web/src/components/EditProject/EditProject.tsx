@@ -17,6 +17,7 @@ function EditProject() {
 
   const [originalProject, setOriginalProject] = useState<IProject>({
     name: "",
+    totalLengthSeconds: 10,
     media: [],
   });
   const [isLoading, setIsLoading] = useState(false);

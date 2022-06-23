@@ -20,10 +20,10 @@
   --cutline-width: 4px;
   height: 120%;
   background-color: rgb(255, 0, 64);
-  position: relative;
+  position: absolute;
   z-index: 999;
   width: var(--cutline-width);
-  left: var(--cutline-width);
+  left: calc(var(--cutline-width) + 26px);
 }
 .icon {
   position: relative;
@@ -36,6 +36,8 @@
   display: flex;
   flex-direction: row;
   position: relative;
+  flex-shrink: 0;
+  margin-left: 4px;
 }
 
 .playbackStatus {

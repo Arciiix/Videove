@@ -30,7 +30,11 @@ function App() {
     currentActiveMediaState
   );
 
-  const [project, setProject] = useState<IProject>({ name: "", media: [] });
+  const [project, setProject] = useState<IProject>({
+    name: "",
+    totalLengthSeconds: 10,
+    media: [],
+  });
   const [isSmallLayout, setIsSmallLayout] = useRecoilState(isSmallLayoutState);
   const [layout, setLayout] = useRecoilState(layoutState);
 
@@ -133,7 +137,7 @@ function App() {
         isStreaming={obsRecordingStreamingStatus.streaming}
       />
       <MainGrid media={project.media} />
-      <Timeline media={project.media} />
+      <Timeline media={project.media} project={project} />
     </div>
   );
 }

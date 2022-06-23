@@ -58,6 +58,10 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
       media: new CustomMedia(true),
     },
   ]);
+  const [totalLength, setTotalLength] = useState({
+    minutes: 0,
+    seconds: 10,
+  });
 
   const [isSelectingColor, setIsSelectingColor] = useState(false);
   const [currentColor, setCurrentColor] = useState("#808080");
@@ -82,6 +86,10 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
   useEffect(() => {
     if (originalProject) {
       setName(originalProject.name);
+      setTotalLength({
+        minutes: Math.floor(originalProject.totalLengthSeconds / 60),
+        seconds: Math.floor(originalProject.totalLengthSeconds % 60),
+      });
       setMedia(
         originalProject.media.map((e) => {
           return {
@@ -347,6 +355,60 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
+
+      <Typography variant="h5" align="center" m={2}>
+        Total length
+      </Typography>
+      <Box display="flex" justifyContent="center" alignItems="center">
+        <TextField
+          variant="filled"
+          type="number"
+          label="Minutes"
+          required
+          margin="dense"
+          value={totalLength.minutes} /* TODO: Add leading zero */
+          onChange={(e) => {
+            if (parseInt(e.target.value) < 0) {
+              setTotalLength({
+                minutes: 0,
+                seconds: totalLength.seconds,
+              });
+            } else {
+              setTotalLength({
+                minutes: parseInt(e.target.value) || 0,
+                seconds: totalLength.seconds,
+              });
+            }
+          }}
+        />
+        <Typography p={1}>:</Typography>
+        <TextField
+          variant="filled"
+          type="number"
+          label="Seconds"
+          required
+          margin="dense"
+          value={totalLength.seconds} /* TODO: Add leading zero */
+          onChange={(e) => {
+            if (parseInt(e.target.value) < 0) {
+              setTotalLength({
+                minutes: totalLength.minutes,
+                seconds: 59,
+              });
+            } else if (parseInt(e.target.value) >= 60) {
+              setTotalLength({
+                minutes: totalLength.minutes,
+                seconds: 0,
+              });
+            } else {
+              setTotalLength({
+                minutes: totalLength.minutes,
+                seconds: parseInt(e.target.value) || 0,
+              });
+            }
+          }}
+        />
+      </Box>
       <Typography variant="h5" align="center" m={2}>
         Media
       </Typography>
@@ -425,6 +487,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
             } else {
               project = {
                 name: "",
+                totalLengthSeconds: 10,
                 media: [],
               };
             }
@@ -432,6 +495,8 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
             project = {
               ...project,
               name: name,
+              totalLengthSeconds:
+                totalLength.minutes * 60 + totalLength.seconds,
               media: media,
             };
 

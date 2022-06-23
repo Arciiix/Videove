@@ -12,6 +12,7 @@ const layoutSchema = Joi.object({
 const addProjectSchema = Joi.object({
   id: Joi.string(), //For update endpoints
   name: Joi.string().required(),
+  totalLengthSeconds: Joi.number().required(),
   layout: Joi.array().items(layoutSchema),
   isSmallLayout: Joi.boolean().default(false),
   media: Joi.array().items(
@@ -41,6 +42,7 @@ const projectsWithoutMediaSchema = Joi.object({
   id: Joi.string(),
   name: Joi.string(),
   layout: Joi.array().items(layoutSchema),
+  totalLengthSeconds: Joi.number().required(),
   isSmallLayout: Joi.boolean(),
 });
 

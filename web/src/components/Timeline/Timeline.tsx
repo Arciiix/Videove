@@ -18,6 +18,7 @@ import handleMediaChange from "../../helpers/handleMediaChange";
 import currentShotsState from "../../recoil/current-shots";
 import isEditingShotsState from "../../recoil/is-editing-shots";
 import { IMedia } from "../../types/Media.type";
+import { IProject } from "../../types/Project.type";
 import { IAddedShot, IShot } from "../../types/Shot.type";
 import getClosestElement from "../../utils/getClosestElement";
 import getState from "../../utils/getState";
@@ -29,9 +30,10 @@ import styles from "./Timeline.module.css";
 
 interface ITimelineProps {
   media: IMedia[];
+  project: IProject;
 }
 
-function Timeline({ media }: ITimelineProps) {
+function Timeline({ media, project }: ITimelineProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currPosition, setCurrPosition] = useState(0);
   const [totalLengthSeconds, setTotalLengthSeconds] = useState(0);
@@ -243,6 +245,7 @@ function Timeline({ media }: ITimelineProps) {
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
+    let lastShotTimeout: ReturnType<typeof setTimeout> | null = null;
 
     let currShotIndex = shots.findIndex(
       (elem) =>
@@ -268,19 +271,30 @@ function Timeline({ media }: ITimelineProps) {
         //   "INTERVAL",
         //   (new Date().getTime() - prevDate.getTime()) / 1000
         // );
+        console.log("INTERVAL", currentPosition);
         const delay = (new Date().getTime() - prevDate.getTime()) / 1000;
+        currentPosition += delay;
         prevDate = new Date();
         setCurrPosition((currPosition) => currPosition + delay);
-        currentPosition += delay;
-
         //All shots have already passed
         if (currShotIndex >= shots.length) {
-          setTimeout(() => {
-            handlePlaybackStatusChange(false);
-            if (interval) {
-              clearInterval(interval);
-            }
-          }, shots[shots.length - 1].durationSeconds * 1000);
+          if (!lastShotTimeout) {
+            handleShot(shots[shots.length - 1]);
+            setActiveShotIndex(shots.length - 1);
+            lastShotTimeout = setTimeout(() => {
+              console.log("LAST SHOT - PAUSING");
+              handlePlaybackStatusChange(false);
+              if (interval) {
+                clearInterval(interval);
+              }
+              if (lastShotTimeout) {
+                clearTimeout(lastShotTimeout);
+              }
+              lastShotTimeout = null;
+              return;
+            }, (shots[shots.length - 1].durationSeconds + shots[shots.length - 1].delaySeconds - currentPosition) * 1000);
+          }
+          return;
         }
 
         //If the time for the current shot has come
@@ -417,10 +431,37 @@ function Timeline({ media }: ITimelineProps) {
     //Ensure that the shots are sorted
     setShots(shotsResponse);
 
-    setTotalLengthSeconds(
+    //Quick fix of the shots in case of an error
+
+    //Make sure the shots don't exceed the total length
+    const totalLength = project.totalLengthSeconds;
+    if (
+      totalLength <
       shotsResponse[shotsResponse.length - 1].delaySeconds +
         shotsResponse[shotsResponse.length - 1].durationSeconds
-    );
+    ) {
+      setShots((prev) => {
+        return prev.filter(
+          (e) => e.delaySeconds + e.durationSeconds < totalLength
+        );
+      });
+    }
+    setTotalLengthSeconds(totalLength);
+
+    //Make sure the last shot ends at the total length
+    setShots((prev) => {
+      return [
+        ...prev.slice(0, -1),
+        ...[
+          {
+            ...prev[prev.length - 1],
+            durationSeconds: totalLength - prev[prev.length - 1].delaySeconds,
+          },
+        ],
+      ];
+    });
+
+    //TODO: Update the actual shots
   }, []);
 
   return (
@@ -437,6 +478,7 @@ function Timeline({ media }: ITimelineProps) {
           className={styles.timelineWrapper}
           onMouseDown={() => setIsDragging(true)}
           onMouseUp={() => setIsDragging(false)}
+          onMouseLeave={() => setIsDragging(false)}
         >
           <LiveTv classes={{ root: styles.icon }} />
           <div className={styles.cutLine}></div>

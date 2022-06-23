@@ -79,6 +79,7 @@ projectRouter.post(
         name: data.name,
         layout: data.layout,
         isSmallLayout: data.isSmallLayout,
+        totalLengthSeconds: data.totalLengthSeconds,
         media: {
           create: data.media.map((e) => {
             return {
@@ -110,8 +111,9 @@ projectRouter.put(
       },
       data: {
         name: data.project.name,
-        layout: data.layout,
-        isSmallLayout: data.isSmallLayout,
+        layout: data.project.layout,
+        isSmallLayout: data.project.isSmallLayout,
+        totalLengthSeconds: data.project.totalLengthSeconds,
       },
     });
 
