@@ -7,6 +7,7 @@ import projectRouter from "./routes/project";
 import loggingMiddleware from "./middlewares/loggingMiddleware";
 import cdnRouter from "./routes/cdn";
 import testingRouter from "./routes/testing";
+import { IPlayPayload, ISeekPayload } from "./types/SocketTypes";
 
 const app = express();
 app.use(express.json());
@@ -32,6 +33,22 @@ io.on("connection", (socket: Socket) => {
 
   socket.on("disconnect", (reason) => {
     logger.info(`Socket ${socket.id} has disconnected - ${reason}`);
+  });
+
+  socket.on("play", (payload: IPlayPayload) => {
+    logger.info(`[EVENT] play: ${JSON.stringify(payload)}`);
+    io.emit("play", {
+      play: payload.play,
+      delay: payload.delay ?? 0,
+      startAt: new Date(payload.startAt),
+    } as IPlayPayload);
+  });
+
+  socket.on("seek", (payload: ISeekPayload) => {
+    logger.info(`[EVENT] seek: ${JSON.stringify(payload)}`);
+    io.emit("seek", {
+      delay: payload.delay,
+    } as ISeekPayload);
   });
 });
 

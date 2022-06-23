@@ -12,7 +12,7 @@ import {
   LocalMedia,
   MediaTypes,
 } from "../../../types/Media.type";
-import { IPlay } from "../../../types/Socket.type";
+import { IPlay, ISeek } from "../../../types/Socket.type";
 
 import styles from "./Player.module.css";
 import VideoPlaceholder from "./VideoPlaceholder/VideoPlaceholder";
@@ -91,11 +91,11 @@ function Player({ width, height, media, fullSize }: IPlayerProps) {
           (media.type as string) === "AUDIO")
       ) {
         (playerRef.current as ReactPlayer | null)?.seekTo(
-          ((data.delay ?? 0) + ((media.media as LocalMedia).delay || 0)) / 1000
+          (data.delay ?? 0) + ((media.media as LocalMedia).delay || 0)
         );
 
         console.log(
-          ((data.delay ?? 0) + ((media.media as LocalMedia).delay || 0)) / 1000
+          (data.delay ?? 0) + ((media.media as LocalMedia).delay || 0)
         );
         setIsOnAir(true);
 
@@ -107,6 +107,16 @@ function Player({ width, height, media, fullSize }: IPlayerProps) {
         setIsPlaying(false);
         setIsOnAir(false);
       }
+    });
+
+    socketIo.on("seek", (data: ISeek) => {
+      console.log(
+        "seek",
+        (data.delay ?? 0) + ((media.media as LocalMedia).delay || 0)
+      );
+      (playerRef.current as ReactPlayer | null)?.seekTo(
+        (data.delay ?? 0) + ((media.media as LocalMedia).delay || 0)
+      );
     });
   }, []);
 

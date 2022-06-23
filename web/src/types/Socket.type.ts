@@ -3,4 +3,8 @@ interface IPlay {
   delay?: number;
   startAt?: Date;
 }
-export type { IPlay };
+interface ISeek {
+  delay: number;
+}
+
+export type { IPlay, ISeek };

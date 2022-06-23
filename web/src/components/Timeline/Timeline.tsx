@@ -11,15 +11,18 @@ import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { useDebouncedCallback } from "use-debounce";
 import ActiveShotContext from "../../context/ActiveShot.context";
 import OBSContext from "../../context/OBS.context";
 import handleMediaChange from "../../helpers/handleMediaChange";
 import currentShotsState from "../../recoil/current-shots";
 import isEditingShotsState from "../../recoil/is-editing-shots";
+import socketIoState from "../../recoil/socketio";
 import { IMedia } from "../../types/Media.type";
 import { IProject } from "../../types/Project.type";
 import { IAddedShot, IShot } from "../../types/Shot.type";
+import { IPlay, ISeek } from "../../types/Socket.type";
 import getClosestElement from "../../utils/getClosestElement";
 import getState from "../../utils/getState";
 import { secondsTomm_ss_ms } from "../../utils/timeFormatter";
@@ -34,11 +37,14 @@ interface ITimelineProps {
 }
 
 function Timeline({ media, project }: ITimelineProps) {
+  const socketio = useRecoilValue(socketIoState);
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [currPosition, setCurrPosition] = useState(0);
   const [totalLengthSeconds, setTotalLengthSeconds] = useState(0);
   const [activeShotIndex, setActiveShotIndex] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isBusyPlaying, setIsBusyPlaying] = useState(false);
 
   const [currentEditedShot, setCurrentEditedShot] = useState<IShot | null>(
     null
@@ -54,6 +60,14 @@ function Timeline({ media, project }: ITimelineProps) {
     useState(100);
 
   const [shots, setShots] = useRecoilState(currentShotsState);
+
+  const seekCallback = async () => {
+    const currPos = await getState(setCurrPosition);
+    socketio?.emit("seek", {
+      delay: currPos,
+    } as ISeek);
+  };
+  const seekDebounced = useDebouncedCallback(seekCallback, 1000);
 
   const editShot = async (shot: IShot): Promise<void> => {
     setCurrentEditedShot(shot);
@@ -136,13 +150,37 @@ function Timeline({ media, project }: ITimelineProps) {
   }, [shots, currentSecondsToWidthMultiplier]);
 
   const handlePlaybackStatusChange = async (overrideIsPlaying?: boolean) => {
+    const isBusyPlayingCurr = await getState(setIsBusyPlaying);
+
+    setIsBusyPlaying(true);
     //DEV
     //TODO: An event
+    let newIsPlaying;
     if (overrideIsPlaying !== undefined && overrideIsPlaying !== null) {
-      setIsPlaying(overrideIsPlaying);
+      newIsPlaying = overrideIsPlaying;
     } else {
-      setIsPlaying((isPlaying) => !isPlaying);
+      newIsPlaying = !(await getState(setIsPlaying));
     }
+
+    if (newIsPlaying) {
+      const delay = await getState(setCurrPosition);
+      socketio?.emit("play", {
+        play: true,
+        delay,
+        startAt: new Date(new Date().getTime() + 1000),
+      } as IPlay);
+
+      setTimeout(() => {
+        setIsPlaying(true);
+      }, 1000);
+    } else {
+      setIsPlaying(false);
+      socketio?.emit("play", {
+        play: false,
+      } as IPlay);
+    }
+
+    setIsBusyPlaying(false);
   };
 
   const handleZoomIn = (power?: number) => {
@@ -163,22 +201,26 @@ function Timeline({ media, project }: ITimelineProps) {
     console.log(isPlaying);
     if (isPlaying) return; //Only if not playing
 
-    //TODO: Emit an event so that videos can seek to the new position
     setCurrPosition((currPosition) => {
       if (currPosition - 1 < 0) return 0; //Only if not at start
       return currPosition - 1;
     });
+
+    //Emit an event so that videos can seek to the new position
+    seekDebounced();
   }, [isPlaying, currPosition]);
 
   const handleForward = useCallback(() => {
     if (isPlaying) return; //Only if not playing
     if (currPosition + 1 > totalLengthSeconds) return; //Only if not at end
 
-    //TODO: Emit an event so that videos can seek to the new position
     setCurrPosition((currPosition) => {
       if (currPosition + 1 > totalLengthSeconds) return totalLengthSeconds;
       return currPosition + 1;
     });
+
+    //Emit an event so that videos can seek to the new position
+    seekDebounced();
   }, [isPlaying, currPosition]);
 
   const handleShot = async (shot: IShot) => {
@@ -385,6 +427,7 @@ function Timeline({ media, project }: ITimelineProps) {
         return prevPosition + (prevXPosition - e.clientX) / 10;
       });
       prevXPosition = e.clientX;
+      seekDebounced();
     };
     if (isDragging && !isPlaying) {
       window.addEventListener("mousemove", handleDragging);
