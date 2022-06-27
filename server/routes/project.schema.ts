@@ -15,6 +15,7 @@ const addProjectSchema = Joi.object({
   totalLengthSeconds: Joi.number().required(),
   layout: Joi.array().items(layoutSchema),
   isSmallLayout: Joi.boolean().default(false),
+  shotsId: Joi.string(), //Not used
   media: Joi.array().items(
     Joi.object({
       id: Joi.string(), //For update endpoints
@@ -42,7 +43,8 @@ const projectsWithoutMediaSchema = Joi.object({
   id: Joi.string(),
   name: Joi.string(),
   layout: Joi.array().items(layoutSchema),
-  totalLengthSeconds: Joi.number().required(),
+  shotsId: Joi.string().allow(null), //Not used
+  totalLengthSeconds: Joi.number().default(10),
   isSmallLayout: Joi.boolean(),
 });
 

@@ -1,4 +1,4 @@
-import { Add, Edit } from "@mui/icons-material";
+import { Add, Delete, Edit } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -14,6 +14,7 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import OBSContext from "../../../context/OBS.context";
 import createScenes from "../../../helpers/createScenes";
 import { saveSmallLayout, saveLayout } from "../../../helpers/saveLayout";
+import { deleteAllShots } from "../../../helpers/shots";
 import isEditingDashboardState from "../../../recoil/is-editing-dashboard";
 import isEditingShotsState from "../../../recoil/is-editing-shots";
 import isSmallLayoutState from "../../../recoil/is-small-layout";
@@ -105,6 +106,19 @@ function MainAppBar({
     await createScenes(obs, projectName, projectId, media);
   };
 
+  const handleAllShotsDelete = async () => {
+    const confirmed = await confirm(
+      `Are you sure you want to delete all the shots?"`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    await deleteAllShots(projectId);
+    return navigate(`/`);
+  };
+
   const handleIsEditingShotsChange = async (
     val: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -178,6 +192,12 @@ function MainAppBar({
                 onClick={handleAddScenesClick}
               >
                 <Add />
+              </IconButton>
+              <IconButton
+                aria-label="Delete all the shots"
+                onClick={handleAllShotsDelete}
+              >
+                <Delete />
               </IconButton>
             </Box>
           </Box>

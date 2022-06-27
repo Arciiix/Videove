@@ -17,6 +17,8 @@ model Project {
   totalLengthSeconds Float   @default(10)
   isSmallLayout      Boolean @default(false)
   media              Media[]
+  shots              Shots   @relation(fields: [shotsId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  shotsId            String  @unique
 }
 
 model Media {
@@ -28,6 +30,12 @@ model Media {
   media     Json?
   Project   Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String?
+}
+
+model Shots {
+  id      String   @id @default(cuid())
+  data    Json
+  Project Project?
 }
 
 enum MediaTypes {

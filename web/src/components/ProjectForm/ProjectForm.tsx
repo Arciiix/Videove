@@ -327,7 +327,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
 
                 //Reorder the media numbers
                 for (let i = 0; i < newMedia.length; i++) {
-                  newMedia[i].number = i + 1;
+                  newMedia[i].number = i;
                 }
 
                 setMedia(newMedia);
@@ -454,7 +454,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
         color="primary"
         onClick={() => {
           const newMedia: IMedia = {
-            number: media.length + 1,
+            number: media.length,
             name: "",
             type: MediaTypes.LOCAL,
             media: new LocalMedia("", 0),
@@ -508,6 +508,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
               };
             });
 
+            serializedProject.layout = undefined;
             if (originalProject) {
               console.log(`Update project`, serializedProject);
 

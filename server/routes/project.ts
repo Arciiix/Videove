@@ -71,9 +71,17 @@ projectRouter.post(
       return;
     }
 
+    if (data.media?.length < 1) {
+      res.status(400).send({
+        success: false,
+        error: "Please add at least one media",
+      });
+    }
+
     const createdProject = await prisma.project.create({
       include: {
         media: true,
+        shots: true,
       },
       data: {
         name: data.name,
@@ -90,6 +98,17 @@ projectRouter.post(
               media: e.media,
             };
           }),
+        },
+        shots: {
+          create: {
+            data: {
+              mediaNumber: 0,
+              color: data.media[0]?.color ?? "#808080",
+              name: "First shot",
+              delaySeconds: 0,
+              durationSeconds: data.totalLengthSeconds,
+            },
+          },
         },
       },
     });

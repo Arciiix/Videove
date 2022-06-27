@@ -8,6 +8,7 @@ import loggingMiddleware from "./middlewares/loggingMiddleware";
 import cdnRouter from "./routes/cdn";
 import testingRouter from "./routes/testing";
 import { IPlayPayload, ISeekPayload } from "./types/SocketTypes";
+import shotsRouter from "./routes/shots";
 
 const app = express();
 app.use(express.json());
@@ -16,6 +17,7 @@ app.use(loggingMiddleware);
 const api = express.Router();
 app.use("/api", api);
 api.use("/projects", projectRouter);
+api.use("/shots", shotsRouter);
 api.use("/cdn", cdnRouter);
 api.use("/testing", testingRouter); //DEV
 

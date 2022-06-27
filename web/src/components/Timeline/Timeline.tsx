@@ -16,6 +16,7 @@ import { useDebouncedCallback } from "use-debounce";
 import ActiveShotContext from "../../context/ActiveShot.context";
 import OBSContext from "../../context/OBS.context";
 import handleMediaChange from "../../helpers/handleMediaChange";
+import { deleteShot, editShot, getShots, saveShots } from "../../helpers/shots";
 import currentShotsState from "../../recoil/current-shots";
 import isEditingShotsState from "../../recoil/is-editing-shots";
 import socketIoState from "../../recoil/socketio";
@@ -27,6 +28,7 @@ import getClosestElement from "../../utils/getClosestElement";
 import getState from "../../utils/getState";
 import { secondsTomm_ss_ms } from "../../utils/timeFormatter";
 import useConfirm from "../ConfirmationDialog/useConfirm";
+import Loading from "../Loading/Loading";
 import EditShot from "./EditShot/EditShot";
 import Shot from "./Shot/Shot";
 import styles from "./Timeline.module.css";
@@ -39,12 +41,14 @@ interface ITimelineProps {
 function Timeline({ media, project }: ITimelineProps) {
   const socketio = useRecoilValue(socketIoState);
 
+  const [isLoading, setIsLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currPosition, setCurrPosition] = useState(0);
   const [totalLengthSeconds, setTotalLengthSeconds] = useState(0);
   const [activeShotIndex, setActiveShotIndex] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isBusyPlaying, setIsBusyPlaying] = useState(false);
+  const [areShotsSaved, setAreShotsSaved] = useState(true);
 
   const [currentEditedShot, setCurrentEditedShot] = useState<IShot | null>(
     null
@@ -67,9 +71,19 @@ function Timeline({ media, project }: ITimelineProps) {
       delay: currPos,
     } as ISeek);
   };
-  const seekDebounced = useDebouncedCallback(seekCallback, 1000);
+  const handleSaveShots = async () => {
+    console.log("Save shots");
+    const shots = await getState(setShots);
+    await saveShots(shots, project.id as string);
+    setAreShotsSaved(true);
+  };
 
-  const editShot = async (shot: IShot): Promise<void> => {
+  const seekDebounced = useDebouncedCallback(seekCallback, 1000);
+  const saveShotsDebounced = useDebouncedCallback(handleSaveShots, 5000);
+
+  const handleEditShot = async (shot: IShot): Promise<void> => {
+    if (isPlaying) return;
+    await handleSaveShots();
     setCurrentEditedShot(shot);
   };
 
@@ -77,13 +91,22 @@ function Timeline({ media, project }: ITimelineProps) {
     setCurrentEditedShot(null);
   };
   const handleShotEditSave = async (newShot: IShot): Promise<void> => {
-    console.log("SAVE SHOT", currentEditedShot);
-    //TODO: Save shot
+    if (!currentEditedShot) return;
+    const index = shots.indexOf(currentEditedShot);
+    await editShot(index, newShot, project.id as string);
+
+    setShots((prev) => {
+      let prevShots = [...prev];
+      prevShots[index] = newShot;
+      return prevShots;
+    });
+
     setCurrentEditedShot(null);
   };
   const handleShotDelete = async (shot: IShot): Promise<void> => {
+    await handleSaveShots();
     if (shots.length <= 1) {
-      toast.warning("You cannot delete the only media left!");
+      toast.warning("You cannot delete the only shot left!");
       return;
     }
     const confirmed = await confirm(
@@ -94,13 +117,13 @@ function Timeline({ media, project }: ITimelineProps) {
       return;
     }
 
-    console.log("DELETE SHOT", currentEditedShot);
-    //TODO: Delete shot
-
+    console.log("DELETE SHOT", shot);
     let newShots = [...shots];
     const oldIndex = newShots.findIndex(
       (e) => e.delaySeconds === shot.delaySeconds
     );
+
+    await deleteShot(oldIndex, project.id as string);
 
     //Remove the old shot and fix the previous one's duration
     newShots.splice(oldIndex, 1);
@@ -143,11 +166,11 @@ function Timeline({ media, project }: ITimelineProps) {
           selfIndex={index}
           shot={shot}
           currentSecondsToWidthMultiplier={currentSecondsToWidthMultiplier}
-          handleClick={(_) => editShot(shot)}
+          handleClick={(_) => handleEditShot(shot)}
         />
       );
     });
-  }, [shots, currentSecondsToWidthMultiplier]);
+  }, [shots, currentSecondsToWidthMultiplier, isPlaying]);
 
   const handlePlaybackStatusChange = async (overrideIsPlaying?: boolean) => {
     const isBusyPlayingCurr = await getState(setIsBusyPlaying);
@@ -283,6 +306,18 @@ function Timeline({ media, project }: ITimelineProps) {
 
       return newShots;
     });
+    setAreShotsSaved(false);
+    saveShotsDebounced();
+  };
+
+  const fetchShots = async (): Promise<IShot[] | null> => {
+    const shotsResponse = await getShots(project.id as string);
+    if (!shotsResponse) {
+      return null;
+    }
+    setShots(shotsResponse);
+    setIsLoading(false);
+    return shotsResponse;
   };
 
   useEffect(() => {
@@ -320,25 +355,9 @@ function Timeline({ media, project }: ITimelineProps) {
         setCurrPosition((currPosition) => currPosition + delay);
         //All shots have already passed
         if (currShotIndex >= shots.length) {
-          if (!lastShotTimeout) {
-            handleShot(shots[shots.length - 1]);
-            setActiveShotIndex(shots.length - 1);
-            lastShotTimeout = setTimeout(() => {
-              console.log("LAST SHOT - PAUSING");
-              handlePlaybackStatusChange(false);
-              if (interval) {
-                clearInterval(interval);
-              }
-              if (lastShotTimeout) {
-                clearTimeout(lastShotTimeout);
-              }
-              lastShotTimeout = null;
-              return;
-            }, (shots[shots.length - 1].durationSeconds + shots[shots.length - 1].delaySeconds - currentPosition) * 1000);
-          }
+          console.log("Last shot...");
           return;
         }
-
         //If the time for the current shot has come
         if (shots[currShotIndex].delaySeconds <= currentPosition) {
           handleShot(shots[currShotIndex]);
@@ -346,11 +365,27 @@ function Timeline({ media, project }: ITimelineProps) {
           currShotIndex++;
         }
       });
+
+      lastShotTimeout = setTimeout(() => {
+        console.log("LAST SHOT - PAUSING");
+        handlePlaybackStatusChange(false);
+        if (interval) {
+          clearInterval(interval);
+        }
+        if (lastShotTimeout) {
+          clearTimeout(lastShotTimeout);
+        }
+        lastShotTimeout = null;
+        return;
+      }, (totalLengthSeconds - currPosition) * 1000);
     }
 
     return () => {
       if (interval) {
         clearInterval(interval);
+      }
+      if (lastShotTimeout) {
+        clearTimeout(lastShotTimeout);
       }
     };
   }, [isPlaying, currentSecondsToWidthMultiplier]);
@@ -385,6 +420,14 @@ function Timeline({ media, project }: ITimelineProps) {
           break;
         case " ": //Space
           handlePlaybackStatusChange();
+          break;
+        case "s":
+          if (e.ctrlKey) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            //Save
+            handleSaveShots();
+          }
           break;
         default:
           if (
@@ -439,74 +482,60 @@ function Timeline({ media, project }: ITimelineProps) {
   }, [isDragging, isPlaying]);
 
   useEffect(() => {
-    //DEV TODO
-    const shotsResponse = [
-      {
-        mediaNumber: 1,
-        color: "#a11211",
-        name: "test",
-        delaySeconds: 0,
-        durationSeconds: 2,
-      },
-      {
-        mediaNumber: 2,
-        color: "#00ff22",
-        name: "test shot",
-        delaySeconds: 2,
-        durationSeconds: 5,
-      },
-      {
-        mediaNumber: 1,
-        color: "#a11211",
-        name: "test2",
-        delaySeconds: 7,
-        durationSeconds: 3,
-      },
-      {
-        mediaNumber: 2,
-        color: "#00ff22",
-        name: "",
-        delaySeconds: 10,
-        durationSeconds: 5,
-      },
-    ];
-
-    //Ensure that the shots are sorted
-    setShots(shotsResponse);
-
-    //Quick fix of the shots in case of an error
-
-    //Make sure the shots don't exceed the total length
-    const totalLength = project.totalLengthSeconds;
-    if (
-      totalLength <
-      shotsResponse[shotsResponse.length - 1].delaySeconds +
-        shotsResponse[shotsResponse.length - 1].durationSeconds
-    ) {
-      setShots((prev) => {
-        return prev.filter(
-          (e) => e.delaySeconds + e.durationSeconds < totalLength
-        );
-      });
-    }
-    setTotalLengthSeconds(totalLength);
-
-    //Make sure the last shot ends at the total length
-    setShots((prev) => {
-      return [
-        ...prev.slice(0, -1),
-        ...[
+    fetchShots().then((shots) => {
+      const totalLength = project.totalLengthSeconds;
+      setTotalLengthSeconds(totalLength);
+      //If there's no shots, add a new one, with full length
+      if (!shots || shots.length === 0) {
+        console.log("No shots!");
+        setShots([
           {
-            ...prev[prev.length - 1],
-            durationSeconds: totalLength - prev[prev.length - 1].delaySeconds,
+            name: "Initial shot",
+            mediaNumber: 0,
+            color: media.find((e) => e.number === 0)?.color ?? "#808080",
+            delaySeconds: 0,
+            durationSeconds: totalLength,
           },
-        ],
-      ];
-    });
+        ]);
+        setAreShotsSaved(false);
+        saveShotsDebounced();
+        return;
+      }
 
-    //TODO: Update the actual shots
+      //Quick fix of the shots in case of an error
+      //Make sure the shots don't exceed the total length
+      if (
+        totalLength <
+        shots[shots.length - 1].delaySeconds +
+          shots[shots.length - 1].durationSeconds
+      ) {
+        setShots((prev) => {
+          return prev.filter(
+            (e) => e.delaySeconds + e.durationSeconds < totalLength
+          );
+        });
+      }
+
+      //Make sure the last shot ends at the total length
+      setShots((prev) => {
+        return [
+          ...prev.slice(0, -1),
+          ...[
+            {
+              ...prev[prev.length - 1],
+              durationSeconds: totalLength - prev[prev.length - 1].delaySeconds,
+            },
+          ],
+        ];
+      });
+
+      saveShotsDebounced();
+    });
   }, []);
 
+  if (isLoading) {
+    return <Loading open={true} />;
+  }
   return (
     <ActiveShotContext.Provider value={activeShotIndex}>
       <EditShot
@@ -557,6 +586,7 @@ function Timeline({ media, project }: ITimelineProps) {
           <IconButton onClick={() => handleZoomIn()}>
             <ZoomIn />
           </IconButton>
+          {!areShotsSaved && "Shots not saved!"}
         </Box>
       </Box>
     </ActiveShotContext.Provider>

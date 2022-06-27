@@ -40,8 +40,12 @@ function Player({ width, height, media, fullSize }: IPlayerProps) {
     switch (mediaType as string) {
       case "LOCAL":
       case "AUDIO":
-        return "/api/cdn/video/" + (media.media as LocalMedia).path;
+        if ((media.media as LocalMedia).path) {
+          return "/api/cdn/video/" + (media.media as LocalMedia).path;
+        }
+        break;
       case "CUSTOM":
+        if (!(media.media as CustomMedia).screenSharePreview) return "";
         if ((media.media as CustomMedia).screenShareStreamObj) {
           return (media.media as CustomMedia)
             .screenShareStreamObj as MediaStream;
@@ -50,7 +54,9 @@ function Player({ width, height, media, fullSize }: IPlayerProps) {
       //TODO: Add support for DroidCam
       default:
     }
-    toast.warn(`Media URL has not been set in media ${media.number}`);
+    toast.warn(
+      `Media URL/screen share object has not been set in media ${media.number}`
+    );
     return "";
   };
 
