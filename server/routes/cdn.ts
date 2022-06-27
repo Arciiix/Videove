@@ -1,8 +1,21 @@
 import express, { Request, Response } from "express";
 import fs from "fs";
 import path from "path";
+import logger from "../utils/logger";
 
 const cdnRouter = express.Router();
+
+cdnRouter.get("/video/list", async (req: Request, res: Response) => {
+  fs.readdir(path.join(__dirname, "..", "cdn", "video"), (err, files) => {
+    if (err) {
+      logger.error("Error while getting the video list");
+      console.error(err);
+      res.status(500).send({ success: false, error: err });
+    } else {
+      res.send({ success: true, files: files });
+    }
+  });
+});
 
 cdnRouter.get("/video/:filename", async (req: Request, res: Response) => {
   const filename = req.params.filename;

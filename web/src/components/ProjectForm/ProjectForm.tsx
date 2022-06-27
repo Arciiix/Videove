@@ -1,4 +1,4 @@
-import { Add, Check, Delete, Save } from "@mui/icons-material";
+import { Add, Check, Delete, Refresh, Save } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -7,10 +7,12 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
   FormControlLabel,
   FormGroup,
   Icon,
   IconButton,
+  InputLabel,
   List,
   ListItem,
   ListItemText,
@@ -69,6 +71,8 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
     (color: string) => void
   >((_) => {});
 
+  const [availablePaths, setAvailablePaths] = useState<string[]>([]);
+
   const confirm = useConfirm();
   const navigate = useNavigate();
 
@@ -81,6 +85,27 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
     newMedia[oldIndex] = newObj;
 
     setMedia(newMedia);
+  };
+
+  const renderPaths = useMemo((): JSX.Element[] => {
+    return availablePaths.map((e: string) => {
+      return (
+        <MenuItem key={`path-${e}`} value={e}>
+          {e}
+        </MenuItem>
+      );
+    });
+  }, [availablePaths]);
+
+  const fetchVideoList = async (): Promise<void> => {
+    try {
+      const response = await axios.get("/api/cdn/video/list");
+
+      setAvailablePaths(response.data.files as string[]);
+    } catch (err) {
+      console.error(err);
+      toast.error("Error while getting the video list");
+    }
   };
 
   useEffect(() => {
@@ -100,6 +125,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
       );
       console.log(media);
     }
+    fetchVideoList();
   }, []);
 
   const renderMedia = useMemo(() => {
@@ -186,129 +212,160 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
               </MenuItem>
             </Select>
             <ListItemText>
-              <TextField
-                className={styles.input}
-                variant="outlined"
-                label="Name"
-                value={e.name ?? ""}
-                onChange={(elem) => {
-                  const newMedia: IMedia = {
-                    ...e,
-                    name: elem.target.value,
-                  };
-
-                  updateMedia(e, newMedia);
-                }}
-                inputProps={{ maxLength: 20 }}
-                fullWidth
-                margin="dense"
-              />
-
-              {e.type === MediaTypes.DROIDCAM && (
+              <Box display={"flex"} flexDirection={"column"} gap={2}>
                 <TextField
+                  classes={{ root: styles.input }}
                   className={styles.input}
                   variant="outlined"
-                  label="URL"
-                  value={(e.media as DroidCam).url ?? ""}
+                  label="Name"
+                  value={e.name ?? ""}
                   onChange={(elem) => {
-                    const newMedia = e;
-                    (e.media as DroidCam).url = elem.target.value;
+                    const newMedia: IMedia = {
+                      ...e,
+                      name: elem.target.value,
+                    };
 
                     updateMedia(e, newMedia);
                   }}
+                  inputProps={{ maxLength: 20 }}
                   fullWidth
                   margin="dense"
                 />
-              )}
 
-              {(e.type === MediaTypes.LOCAL || e.type === MediaTypes.AUDIO) && (
-                <div>
+                {e.type === MediaTypes.DROIDCAM && (
                   <TextField
+                    classes={{ root: styles.input }}
                     className={styles.input}
                     variant="outlined"
-                    label="Path"
-                    value={(e.media as LocalMedia).path ?? ""}
+                    label="URL"
+                    value={(e.media as DroidCam).url ?? ""}
                     onChange={(elem) => {
                       const newMedia = e;
-                      (e.media as LocalMedia).path = elem.target.value;
+                      (e.media as DroidCam).url = elem.target.value;
 
                       updateMedia(e, newMedia);
                     }}
+                    fullWidth
                     margin="dense"
                   />
-                  <TextField
-                    className={styles.input}
-                    variant="outlined"
-                    label="Delay [s]"
-                    value={(e.media as LocalMedia).delayStringHelper ?? ""}
-                    onChange={(elem) => {
-                      if (!numericInputRegexp.test(elem.target.value)) return;
-                      let newValue = elem.target.value;
-                      if (isNaN(parseFloat(newValue))) {
-                        newValue = "0";
-                      }
-                      const newMedia = e;
-                      (e.media as LocalMedia).delayStringHelper = newValue;
-                      //If the next character is a dot, don't change the current value (user wills to write the decimal part of the number)
-                      //Otherwise, parse the value of the input as float and update it in the media object
-                      if (newValue.slice(-1) !== ".") {
-                        (e.media as LocalMedia).delay = parseFloat(newValue);
-                      }
+                )}
 
-                      updateMedia(e, newMedia);
-                    }}
-                    margin="dense"
-                  />
-                </div>
-              )}
-
-              {e.type === MediaTypes.CUSTOM && (
-                <FormGroup>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        value={(e.media as CustomMedia).screenSharePreview}
-                        defaultChecked
+                {(e.type === MediaTypes.LOCAL ||
+                  e.type === MediaTypes.AUDIO) && (
+                  <Box display={"flex"} flexDirection={"column"} gap={2}>
+                    <FormControl
+                      classes={{ root: styles.input }}
+                      className={styles.input}
+                      fullWidth
+                    >
+                      <InputLabel id="path-select-label">Path</InputLabel>
+                      <Select
+                        labelId="path-select-label"
+                        variant="outlined"
+                        label="Path"
+                        value={(e.media as LocalMedia).path}
                         onChange={(elem) => {
                           const newMedia = e;
-                          (e.media as CustomMedia).screenSharePreview =
-                            elem.target.checked;
+                          (e.media as LocalMedia).path = elem.target.value;
 
                           updateMedia(e, newMedia);
                         }}
-                      />
-                    }
-                    label="Preview by screen sharing"
-                  />
-                </FormGroup>
-              )}
+                        fullWidth
+                        placeholder="Select a path"
+                        margin="dense"
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        {renderPaths}
+                      </Select>
+                    </FormControl>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      onClick={() => fetchVideoList()}
+                    >
+                      <Refresh />
+                      Refresh
+                    </Button>
 
-              {e.type === MediaTypes.COLOR && (
-                <div
-                  className={styles.colorPicker}
-                  style={{
-                    backgroundColor: (e.media as ColorMedia).color ?? "#000000",
-                    color: getFontColor(
-                      (e.media as ColorMedia).color ?? "#000000"
-                    ),
-                  }}
-                  onClick={(elem) => {
-                    setChangeColorFunction(() => (color: string) => {
-                      updateMedia(e, {
-                        ...e,
-                        media: {
-                          ...e.media,
-                          color,
-                        },
+                    <TextField
+                      classes={{ root: styles.input }}
+                      className={styles.input}
+                      variant="outlined"
+                      label="Delay [s]"
+                      value={(e.media as LocalMedia).delayStringHelper ?? ""}
+                      fullWidth
+                      onChange={(elem) => {
+                        if (!numericInputRegexp.test(elem.target.value)) return;
+                        let newValue = elem.target.value;
+                        if (isNaN(parseFloat(newValue))) {
+                          newValue = "0";
+                        }
+                        const newMedia = e;
+                        (e.media as LocalMedia).delayStringHelper = newValue;
+                        //If the next character is a dot, don't change the current value (user wills to write the decimal part of the number)
+                        //Otherwise, parse the value of the input as float and update it in the media object
+                        if (newValue.slice(-1) !== ".") {
+                          (e.media as LocalMedia).delay = parseFloat(newValue);
+                        }
+
+                        updateMedia(e, newMedia);
+                      }}
+                      margin="dense"
+                    />
+                  </Box>
+                )}
+
+                {e.type === MediaTypes.CUSTOM && (
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          value={(e.media as CustomMedia).screenSharePreview}
+                          defaultChecked
+                          onChange={(elem) => {
+                            const newMedia = e;
+                            (e.media as CustomMedia).screenSharePreview =
+                              elem.target.checked;
+
+                            updateMedia(e, newMedia);
+                          }}
+                        />
+                      }
+                      label="Preview by screen sharing"
+                    />
+                  </FormGroup>
+                )}
+
+                {e.type === MediaTypes.COLOR && (
+                  <div
+                    className={styles.colorPicker}
+                    style={{
+                      backgroundColor:
+                        (e.media as ColorMedia).color ?? "#000000",
+                      color: getFontColor(
+                        (e.media as ColorMedia).color ?? "#000000"
+                      ),
+                    }}
+                    onClick={(elem) => {
+                      setChangeColorFunction(() => (color: string) => {
+                        updateMedia(e, {
+                          ...e,
+                          media: {
+                            ...e.media,
+                            color,
+                          },
+                        });
                       });
-                    });
 
-                    setIsSelectingColor(true);
-                  }}
-                >
-                  Color
-                </div>
-              )}
+                      setIsSelectingColor(true);
+                    }}
+                  >
+                    Color
+                  </div>
+                )}
+              </Box>
             </ListItemText>
 
             <Button
@@ -340,7 +397,7 @@ function ProjectForm({ originalProject }: IProjectFormProps) {
         </ListItem>
       );
     });
-  }, [media]);
+  }, [media, availablePaths]);
 
   return (
     <Box>
