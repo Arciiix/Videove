@@ -21,6 +21,7 @@ import getNextShotTime from "../../helpers/getNextShotTime";
 import handleMediaChange from "../../helpers/handleMediaChange";
 import { deleteShot, editShot, getShots, saveShots } from "../../helpers/shots";
 import currPositionState from "../../recoil/curr-position";
+import currentNextMediaState from "../../recoil/current-next-media";
 import currentShotsState from "../../recoil/current-shots";
 import isEditingShotsState from "../../recoil/is-editing-shots";
 import socketIoState from "../../recoil/socketio";
@@ -37,6 +38,7 @@ import CurrentMedia from "../CurrentMedia/CurrentMedia";
 import Loading from "../Loading/Loading";
 import EditShot from "./EditShot/EditShot";
 import Shot from "./Shot/Shot";
+import Shots from "./Shots";
 import styles from "./Timeline.module.css";
 
 interface ITimelineProps {
@@ -57,6 +59,9 @@ function Timeline({ media, project }: ITimelineProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isBusyPlaying, setIsBusyPlaying] = useState(false);
   const [areShotsSaved, setAreShotsSaved] = useState(true);
+  const [currentNextMedia, setCurrentNextMedia] = useRecoilState(
+    currentNextMediaState
+  );
 
   const [currentEditedShot, setCurrentEditedShot] = useState<IShot | null>(
     null
@@ -160,25 +165,25 @@ function Timeline({ media, project }: ITimelineProps) {
     setCurrentEditedShot(null);
   };
 
-  const renderShots = useMemo(() => {
-    return shots.map((shot, index) => {
-      return (
-        <Shot
-          key={
-            index +
-            "_" +
-            shot.mediaNumber +
-            "_" +
-            (activeShotIndex === index ? "active" : "not-active")
-          }
-          selfIndex={index}
-          shot={shot}
-          currentSecondsToWidthMultiplier={currentSecondsToWidthMultiplier}
-          handleClick={(_) => handleEditShot(shot)}
-        />
-      );
-    });
-  }, [shots, currentSecondsToWidthMultiplier, isPlaying]);
+  // const renderShots = useMemo(() => {
+  //   return shots.map((shot, index) => {
+  //     return (
+  //       <Shot
+  //         key={
+  //           index +
+  //           "_" +
+  //           shot.mediaNumber +
+  //           "_" +
+  //           (activeShotIndex === index ? "active" : "not-active")
+  //         }
+  //         selfIndex={index}
+  //         shot={shot}
+  //         currentSecondsToWidthMultiplier={currentSecondsToWidthMultiplier}
+  //         handleClick={(_) => handleEditShot(shot)}
+  //       />
+  //     );
+  //   });
+  // }, [shots, currentSecondsToWidthMultiplier, isPlaying]);
 
   const handlePlaybackStatusChange = async (overrideIsPlaying?: boolean) => {
     const isBusyPlayingCurr = await getState(setIsBusyPlaying);
@@ -257,11 +262,17 @@ function Timeline({ media, project }: ITimelineProps) {
   const handleShot = async (shot: IShot) => {
     console.log("SHOT", shot);
 
+    const nextShotData = getNextShotTime(
+      await getState(setCurrPosition),
+      await getState(setShots)
+    );
+    setCurrentNextMedia(null);
     await handleMediaChange(
       obs,
       media.find((e) => e.number === shot.mediaNumber) as IMedia,
       socketio as Socket,
-      getNextShotTime(await getState(setCurrPosition), await getState(setShots))
+      nextShotData.date,
+      nextShotData?.shot?.mediaNumber
     );
   };
 
@@ -400,6 +411,7 @@ function Timeline({ media, project }: ITimelineProps) {
           );
           if (foundMedia) {
             handleMediaChange(obs, foundMedia, socketio as Socket);
+            setCurrentNextMedia(null);
             if (isEditingShots) {
               handleAddShotToTimeline({
                 mediaNumber: foundMedia.number,
@@ -524,7 +536,13 @@ function Timeline({ media, project }: ITimelineProps) {
               }px)`,
             }}
           >
-            {renderShots}
+            <Shots
+              shots={shots}
+              currentSecondsToWidthMultiplier={currentSecondsToWidthMultiplier}
+              isPlaying={isPlaying}
+              handleEditShot={handleEditShot}
+              activeShotIndex={activeShotIndex}
+            />
           </div>
         </div>
         <Box className={styles.playbackStatus}>

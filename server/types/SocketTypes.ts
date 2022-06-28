@@ -11,6 +11,7 @@ interface ISeekPayload {
 interface IMediaChangePayload {
   media: IMedia;
   nextShotDate?: Date;
+  nextShot?: number;
 }
 
 interface IMedia {
@@ -19,13 +20,6 @@ interface IMedia {
   name?: string;
   type: string;
   media: any;
-}
-interface IShot {
-  mediaNumber: number;
-  color?: string;
-  name: string;
-  delaySeconds: number;
-  durationSeconds: number;
 }
 
 export type { IPlayPayload, ISeekPayload, IMediaChangePayload };

@@ -27,6 +27,7 @@ import { IAddedShot } from "../../types/Shot.type";
 import socketIoState from "../../recoil/socketio";
 import { Socket } from "socket.io-client";
 import getNextShotTime from "../../helpers/getNextShotTime";
+import currentNextMediaState from "../../recoil/current-next-media";
 
 interface IFeedProps {
   data: IMedia;
@@ -47,6 +48,9 @@ function Feed({
   const [askingForScreenShare, setAskingForScreenShare] = useState(false);
   const obs = useContext(OBSContext);
   const currentActiveMedia = useRecoilValue(currentActiveMediaState);
+  const [currentNextMedia, setCurrentNextMedia] = useRecoilState(
+    currentNextMediaState
+  );
   const [playerKey, setPlayerKey] = useState(
     `player${data.number}` + new Date()
   );
@@ -117,11 +121,18 @@ function Feed({
         name: "",
       });
     }
+
+    const nextShotData = getNextShotTime(
+      await getState(setCurrPosition),
+      await getState(setShots)
+    );
+    setCurrentNextMedia(null);
     handleMediaChange(
       obs,
       data,
       socketio as Socket,
-      getNextShotTime(await getState(setCurrPosition), await getState(setShots))
+      nextShotData.date,
+      nextShotData?.shot?.mediaNumber
     );
   };
 
@@ -143,6 +154,8 @@ function Feed({
           !hideIndicator && currentActiveMedia === media.number.toString()
             ? styles.active
             : styles.inactive
+        } ${
+          !hideIndicator && currentNextMedia === media.number ? styles.next : ""
         }`}
         width={width}
         height={height}

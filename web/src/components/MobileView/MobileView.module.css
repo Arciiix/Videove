@@ -1,0 +1,71 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  margin-bottom: 80px;
+}
+.media {
+  padding: 20px;
+  min-width: calc(100vw - 25px);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.mediaDescripiton {
+  font-size: 1.5em;
+  text-align: center;
+}
+.playbackStatusText {
+  font-size: 2em;
+}
+.state {
+  margin: 20px 0px;
+  width: 80%;
+  height: 30px;
+  background-color: red;
+  border-radius: 20px;
+  /* transition: 0.3s background-color; */
+}
+
+.timelineWrapper {
+  height: 100px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: hsl(0, 0%, 19%);
+  padding: 10px;
+  user-select: none;
+  left: 0;
+}
+.cutLine {
+  margin-left: 4px;
+  --cutline-width: 4px;
+  height: 100px;
+  background-color: rgb(255, 0, 64);
+  position: absolute;
+  z-index: 999;
+  width: var(--cutline-width);
+  left: calc(var(--cutline-width) + 26px);
+}
+.icon {
+  position: relative;
+  z-index: 999;
+  background-color: hsla(0, 0%, 19%, 0.7);
+}
+.timeline {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+.myMediaDelay {
+  font-size: 3em;
+}

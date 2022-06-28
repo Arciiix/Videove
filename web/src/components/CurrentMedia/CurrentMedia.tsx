@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 import { io, Socket } from "socket.io-client";
+import currentNextMediaState from "../../recoil/current-next-media";
 import socketIoState from "../../recoil/socketio";
 import { IMedia } from "../../types/Media.type";
 import { IMediaChange } from "../../types/Socket.type";
 import getFontColor from "../../utils/getFontColor";
 import styles from "./CurrentMedia.module.css";
 
-function CurrentMedia() {
+interface ICurrentMediaProps {
+  fullSize?: boolean;
+}
+
+function CurrentMedia({ fullSize }: ICurrentMediaProps) {
   const [timeUntil, setTimeUntil] = useState<number>(0);
   const [currMedia, setCurrMedia] = useState<IMedia | null>(null);
   const [socket, setSocket] = useRecoilState(socketIoState);
@@ -47,7 +52,7 @@ function CurrentMedia() {
   }, []);
 
   return (
-    <div className={styles.wrapper}>
+    <div className={`${styles.wrapper} ${fullSize ? styles.fullSize : ""}`}>
       <div
         className={`${styles.mediaNumber} ${styles.center}`}
         style={{

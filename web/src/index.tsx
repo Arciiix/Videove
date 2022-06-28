@@ -20,6 +20,8 @@ import MediaOutput from "./components/MediaOutput/MediaOutput";
 import EditProject from "./components/EditProject/EditProject";
 import Logo from "./components/Logo/Logo";
 import CurrentMedia from "./components/CurrentMedia/CurrentMedia";
+import MobileView from "./components/MobileView/MobileView";
+import MobileViewChooseCamera from "./components/MobileView/MobileViewChooseCamera/MobileViewChooseCamera";
 
 const darkTheme = createTheme({
   palette: {
@@ -57,6 +59,14 @@ root.render(
               <Route path="app" element={<RequireObsConnected />}>
                 <Route path=":id" element={<App />} />
               </Route>
+              <Route
+                path="/mobile/:projectId"
+                element={<MobileViewChooseCamera />}
+              />
+              <Route
+                path="/mobile/:projectId/:media"
+                element={<MobileView />}
+              />
               <Route path="output">
                 <Route path="logo" element={<Logo full width="100%" />} />
                 <Route path="mediaFeed" element={<CurrentMedia />} />

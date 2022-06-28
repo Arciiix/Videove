@@ -20,6 +20,8 @@ import Timeline from "../Timeline/Timeline";
 import emitSceneChanged from "../../helpers/emitSceneChanged";
 import socketIoState from "../../recoil/socketio";
 import { Socket } from "socket.io-client";
+import { IMediaChange } from "../../types/Socket.type";
+import currentNextMediaState from "../../recoil/current-next-media";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -32,6 +34,9 @@ function App() {
     useRecoilState(obsRecordingStreamingStatusState);
   const [currentActiveMedia, setCurrentActiveMedia] = useRecoilState(
     currentActiveMediaState
+  );
+  const [currentNextMedia, setCurrentNextMedia] = useRecoilState(
+    currentNextMediaState
   );
 
   const [project, setProject] = useState<IProject>({
@@ -131,6 +136,14 @@ function App() {
       emitSceneChanged(parseInt(data.sceneName), socketio as Socket);
 
       setCurrentActiveMedia(data.sceneName);
+    });
+
+    socketio?.on("mediaChange", (data: IMediaChange) => {
+      if (data.nextShot) {
+        setCurrentNextMedia(data.nextShot);
+      } else {
+        setCurrentNextMedia(null);
+      }
     });
   }, []);
 

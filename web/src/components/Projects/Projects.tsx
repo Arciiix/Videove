@@ -1,8 +1,9 @@
-import { Delete } from "@mui/icons-material";
+import { Delete, PhoneAndroid } from "@mui/icons-material";
 import {
   IconButton,
   List,
   ListItem,
+  ListItemIcon,
   ListItemSecondaryAction,
   ListItemText,
 } from "@mui/material";
@@ -57,6 +58,10 @@ function Projects({ projectsList }: IProjectsProps) {
     }
   };
 
+  const handleMobileView = (project: IProject) => {
+    return navigate(`/mobile/${project.id}`);
+  };
+
   const navigateToProject = (project: IProject) => {
     if (!obsStatus) return;
     return navigate(`/app/${project.id}`);
@@ -72,6 +77,11 @@ function Projects({ projectsList }: IProjectsProps) {
           onClick={() => navigateToProject(elem)}
           key={elem.id}
         >
+          <ListItemIcon>
+            <IconButton onClick={() => handleMobileView(elem)}>
+              <PhoneAndroid />
+            </IconButton>
+          </ListItemIcon>
           <ListItemText
             primary={elem.name}
             secondary={`media: ${elem.media.length}`}

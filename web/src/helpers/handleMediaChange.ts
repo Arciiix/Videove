@@ -8,7 +8,8 @@ async function handleMediaChange(
   obs: OBSWebSocket,
   currMedia: IMedia,
   io: Socket | null,
-  nextShotDate?: Date
+  nextShotDate?: Date,
+  nextShot?: number
 ): Promise<void> {
   await obs.call("SetCurrentProgramScene", {
     sceneName: currMedia.number.toString(),
@@ -18,6 +19,7 @@ async function handleMediaChange(
     io.emit("mediaChange", {
       media: currMedia,
       nextShotDate,
+      nextShot,
     } as IMediaChange);
   }
 }

@@ -62,6 +62,7 @@ io.on("connection", (socket: Socket) => {
     io.emit("mediaChange", {
       media: payload.media,
       nextShotDate: payload.nextShotDate,
+      nextShot: payload.nextShot,
     } as IMediaChangePayload);
   });
 });

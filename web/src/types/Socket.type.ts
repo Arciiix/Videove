@@ -13,6 +13,7 @@ interface ISeek {
 interface IMediaChange {
   media: IMedia;
   nextShotDate?: Date;
+  nextShot?: number;
 }
 
 export type { IPlay, ISeek, IMediaChange };
