@@ -1,0 +1,23 @@
+.wrapper {
+  display: flex;
+  width: 80px;
+  justify-content: center;
+  align-items: center;
+}
+.mediaNumber {
+  width: 40px;
+  background-color: red;
+  height: 40px;
+  font-size: 2em;
+}
+.timeUntil {
+  background-color: hsla(0, 0%, 100%, 0.3);
+  width: 40px;
+  height: 40px;
+  transition: color 0.3s;
+}
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

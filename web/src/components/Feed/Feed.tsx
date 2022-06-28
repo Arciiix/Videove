@@ -24,6 +24,9 @@ import addShotToTimeline from "../../helpers/addShotToTimeline";
 import currentShotsState from "../../recoil/current-shots";
 import { saveShots } from "../../helpers/shots";
 import { IAddedShot } from "../../types/Shot.type";
+import socketIoState from "../../recoil/socketio";
+import { Socket } from "socket.io-client";
+import getNextShotTime from "../../helpers/getNextShotTime";
 
 interface IFeedProps {
   data: IMedia;
@@ -39,6 +42,7 @@ function Feed({
   projectId,
   hideIndicator = false,
 }: IFeedProps) {
+  const socketio = useRecoilValue(socketIoState);
   const [media, setMedia] = useState(data);
   const [askingForScreenShare, setAskingForScreenShare] = useState(false);
   const obs = useContext(OBSContext);
@@ -101,7 +105,7 @@ function Feed({
     await saveShots(shots, projectId as string);
   };
 
-  const switchMedia = () => {
+  const switchMedia = async () => {
     if (currentActiveMedia === data.number.toString()) {
       return;
     }
@@ -113,7 +117,12 @@ function Feed({
         name: "",
       });
     }
-    handleMediaChange(obs, data.number.toString());
+    handleMediaChange(
+      obs,
+      data,
+      socketio as Socket,
+      getNextShotTime(await getState(setCurrPosition), await getState(setShots))
+    );
   };
 
   useEffect(() => {

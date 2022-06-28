@@ -1,3 +1,6 @@
+import { IMedia } from "./Media.type";
+import { IShot } from "./Shot.type";
+
 interface IPlay {
   play: boolean;
   delay?: number;
@@ -7,4 +10,9 @@ interface ISeek {
   delay: number;
 }
 
-export type { IPlay, ISeek };
+interface IMediaChange {
+  media: IMedia;
+  nextShotDate?: Date;
+}
+
+export type { IPlay, ISeek, IMediaChange };

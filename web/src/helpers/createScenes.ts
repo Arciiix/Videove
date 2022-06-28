@@ -1,6 +1,6 @@
 import OBSWebSocket from "obs-websocket-js";
 import { toast } from "react-toastify";
-import { IMedia } from "../types/Media.type";
+import { IMedia, Media, MediaTypes } from "../types/Media.type";
 import handleMediaChange from "./handleMediaChange";
 
 async function createScenes(
@@ -70,6 +70,27 @@ async function createScenes(
     },
   });
 
+  //Create the current media time feed
+  const createFeed = await obs.call("CreateInput", {
+    sceneName: "0_VideoveBlank",
+    inputName: "VideoveMediaFeed",
+    inputKind: "browser_source",
+    inputSettings: {
+      url: `${baseUrl}/output/mediaFeed`,
+      width: 80,
+      height: 40,
+    },
+  });
+
+  await obs.call("SetSceneItemTransform", {
+    sceneName: "0_VideoveBlank",
+    sceneItemId: createFeed.sceneItemId,
+    sceneItemTransform: {
+      positionX: 0,
+      positionY: 0,
+    },
+  });
+
   console.log("Creating scenes and sources...");
   //Create the scenes and the sources
   for await (const m of media) {
@@ -81,7 +102,15 @@ async function createScenes(
     });
     console.log(createScene);
 
-    await handleMediaChange(obs, sceneName);
+    await handleMediaChange(
+      obs,
+      {
+        number: m.number,
+        type: MediaTypes.CUSTOM, //Doesn't matter, just switch the scene
+        media: new Media(),
+      },
+      null
+    );
 
     const transitionChange = await obs.call("SetCurrentSceneTransition", {
       transitionName: "Cut",
@@ -130,6 +159,21 @@ async function createScenes(
       sceneItemTransform: {
         positionX: 30,
         positionY: videoSettings.baseHeight - 150,
+      },
+    });
+
+    //Current media time feed
+    const createFeed = await obs.call("CreateSceneItem", {
+      sceneName,
+      sourceName: "VideoveMediaFeed",
+      sceneItemEnabled: true,
+    });
+    await obs.call("SetSceneItemTransform", {
+      sceneName,
+      sceneItemId: createFeed.sceneItemId,
+      sceneItemTransform: {
+        positionX: 0,
+        positionY: 0,
       },
     });
   }

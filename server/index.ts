@@ -7,7 +7,11 @@ import projectRouter from "./routes/project";
 import loggingMiddleware from "./middlewares/loggingMiddleware";
 import cdnRouter from "./routes/cdn";
 import testingRouter from "./routes/testing";
-import { IPlayPayload, ISeekPayload } from "./types/SocketTypes";
+import {
+  IMediaChangePayload,
+  IPlayPayload,
+  ISeekPayload,
+} from "./types/SocketTypes";
 import shotsRouter from "./routes/shots";
 
 const app = express();
@@ -51,6 +55,14 @@ io.on("connection", (socket: Socket) => {
     io.emit("seek", {
       delay: payload.delay,
     } as ISeekPayload);
+  });
+
+  socket.on("mediaChange", (payload: IMediaChangePayload) => {
+    logger.info(`[EVENT] media change: ${JSON.stringify(payload)}`);
+    io.emit("mediaChange", {
+      media: payload.media,
+      nextShotDate: payload.nextShotDate,
+    } as IMediaChangePayload);
   });
 });
 

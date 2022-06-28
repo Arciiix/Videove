@@ -12,10 +12,12 @@ import IconButton from "@mui/material/IconButton";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { useRecoilState, useRecoilValue } from "recoil";
+import { Socket } from "socket.io-client";
 import { useDebouncedCallback } from "use-debounce";
 import ActiveShotContext from "../../context/ActiveShot.context";
 import OBSContext from "../../context/OBS.context";
 import addShotToTimeline from "../../helpers/addShotToTimeline";
+import getNextShotTime from "../../helpers/getNextShotTime";
 import handleMediaChange from "../../helpers/handleMediaChange";
 import { deleteShot, editShot, getShots, saveShots } from "../../helpers/shots";
 import currPositionState from "../../recoil/curr-position";
@@ -31,6 +33,7 @@ import getClosestElement from "../../utils/getClosestElement";
 import getState from "../../utils/getState";
 import { secondsTomm_ss_ms } from "../../utils/timeFormatter";
 import useConfirm from "../ConfirmationDialog/useConfirm";
+import CurrentMedia from "../CurrentMedia/CurrentMedia";
 import Loading from "../Loading/Loading";
 import EditShot from "./EditShot/EditShot";
 import Shot from "./Shot/Shot";
@@ -254,7 +257,12 @@ function Timeline({ media, project }: ITimelineProps) {
   const handleShot = async (shot: IShot) => {
     console.log("SHOT", shot);
 
-    await handleMediaChange(obs, shot.mediaNumber.toString());
+    await handleMediaChange(
+      obs,
+      media.find((e) => e.number === shot.mediaNumber) as IMedia,
+      socketio as Socket,
+      getNextShotTime(await getState(setCurrPosition), await getState(setShots))
+    );
   };
 
   const handleAddShotToTimeline = async (shot: IAddedShot) => {
@@ -387,18 +395,15 @@ function Timeline({ media, project }: ITimelineProps) {
           }
           break;
         default:
-          if (
-            media.find(
-              (elem: IMedia) => elem.number.toString() === e.key.toString()
-            )
-          ) {
-            handleMediaChange(obs, e.key);
+          let foundMedia = media.find(
+            (elem: IMedia) => elem.number.toString() === e.key.toString()
+          );
+          if (foundMedia) {
+            handleMediaChange(obs, foundMedia, socketio as Socket);
             if (isEditingShots) {
               handleAddShotToTimeline({
-                mediaNumber: parseInt(e.key),
-                color: media.find(
-                  (element) => element.number.toString() === e.key.toString()
-                )?.color,
+                mediaNumber: foundMedia.number,
+                color: foundMedia.color || "#808080",
                 name: "",
               });
             }
@@ -523,6 +528,7 @@ function Timeline({ media, project }: ITimelineProps) {
           </div>
         </div>
         <Box className={styles.playbackStatus}>
+          <CurrentMedia />
           <IconButton onClick={() => handleZoomOut()}>
             <ZoomOut />
           </IconButton>

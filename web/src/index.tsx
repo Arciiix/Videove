@@ -19,6 +19,7 @@ import obs from "./obs";
 import MediaOutput from "./components/MediaOutput/MediaOutput";
 import EditProject from "./components/EditProject/EditProject";
 import Logo from "./components/Logo/Logo";
+import CurrentMedia from "./components/CurrentMedia/CurrentMedia";
 
 const darkTheme = createTheme({
   palette: {
@@ -58,6 +59,7 @@ root.render(
               </Route>
               <Route path="output">
                 <Route path="logo" element={<Logo full width="100%" />} />
+                <Route path="mediaFeed" element={<CurrentMedia />} />
                 <Route path=":project">
                   <Route
                     path=":media/:width/:height"
