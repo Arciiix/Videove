@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import OBSContext from "../../context/OBS.context";
 import obsRecordingStreamingStatusState from "../../recoil/obs-recording-streaming-status";
 import { IProject } from "../../types/Project.type";
@@ -17,11 +17,15 @@ import layoutState from "../../recoil/layout";
 import getProject from "../../helpers/getProject";
 import { Layout } from "react-grid-layout";
 import Timeline from "../Timeline/Timeline";
+import emitSceneChanged from "../../helpers/emitSceneChanged";
+import socketIoState from "../../recoil/socketio";
+import { Socket } from "socket.io-client";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [uniqueId, setUniqueId] = useState("");
 
+  const socketio = useRecoilValue(socketIoState);
   const obs = useContext(OBSContext);
 
   const [obsRecordingStreamingStatus, setObsRecordingStreamingStatus] =
@@ -83,7 +87,10 @@ function App() {
 
   const getObsCurrentScene = async () => {
     const scene = await obs.call("GetCurrentProgramScene");
-
+    emitSceneChanged(
+      parseInt(scene.currentProgramSceneName),
+      socketio as Socket
+    );
     setCurrentActiveMedia(scene.currentProgramSceneName);
   };
 
@@ -121,6 +128,8 @@ function App() {
     });
 
     obs.on("CurrentProgramSceneChanged", (data) => {
+      emitSceneChanged(parseInt(data.sceneName), socketio as Socket);
+
       setCurrentActiveMedia(data.sceneName);
     });
   }, []);
