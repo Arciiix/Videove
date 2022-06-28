@@ -5,13 +5,15 @@ import isEditingDashboardState from "../../../recoil/is-editing-dashboard";
 import isSmallLayoutState from "../../../recoil/is-small-layout";
 import layoutState from "../../../recoil/layout";
 import { IMedia, MediaTypes } from "../../../types/Media.type";
+import { IProject } from "../../../types/Project.type";
 import Feed from "../../Feed/Feed";
 
 interface IMainGridProps {
   media: IMedia[];
+  project: IProject;
 }
 
-function MainGrid({ media }: IMainGridProps) {
+function MainGrid({ media, project }: IMainGridProps) {
   const [layoutEditTime, setLayoutEditTime] = useState<number>(
     new Date().getTime()
   );
@@ -65,6 +67,7 @@ function MainGrid({ media }: IMainGridProps) {
                   ? "125px"
                   : "250px"
               }
+              projectId={project.id as string}
             />
           </div>
         );
@@ -72,7 +75,7 @@ function MainGrid({ media }: IMainGridProps) {
     );
 
     return mediaArr;
-  }, [media, isSmallLayout]);
+  }, [media, isSmallLayout, project]);
 
   useEffect(() => {
     setLayoutEditTime(new Date().getTime());

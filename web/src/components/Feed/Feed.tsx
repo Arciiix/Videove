@@ -13,17 +13,32 @@ import styles from "./Feed.module.css";
 import Paper from "@mui/material/Paper";
 import MediaNumber from "./MediaNumber/MediaNumber";
 import currentActiveMediaState from "../../recoil/current-active-media";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import OBSContext from "../../context/OBS.context";
 import handleMediaChange from "../../helpers/handleMediaChange";
+import isEditingShotsState from "../../recoil/is-editing-shots";
+import getState from "../../utils/getState";
+import currPositionState from "../../recoil/curr-position";
+import totalLengthSecondsState from "../../recoil/total-length-seconds";
+import addShotToTimeline from "../../helpers/addShotToTimeline";
+import currentShotsState from "../../recoil/current-shots";
+import { saveShots } from "../../helpers/shots";
+import { IAddedShot } from "../../types/Shot.type";
 
 interface IFeedProps {
   data: IMedia;
   width: string;
   height: string;
+  projectId: string;
   hideIndicator?: boolean;
 }
-function Feed({ data, width, height, hideIndicator = false }: IFeedProps) {
+function Feed({
+  data,
+  width,
+  height,
+  projectId,
+  hideIndicator = false,
+}: IFeedProps) {
   const [media, setMedia] = useState(data);
   const [askingForScreenShare, setAskingForScreenShare] = useState(false);
   const obs = useContext(OBSContext);
@@ -31,6 +46,13 @@ function Feed({ data, width, height, hideIndicator = false }: IFeedProps) {
   const [playerKey, setPlayerKey] = useState(
     `player${data.number}` + new Date()
   );
+
+  const isEditingShots = useRecoilValue(isEditingShotsState);
+  const [currPosition, setCurrPosition] = useRecoilState(currPositionState);
+  const [totalLengthSeconds, setTotalLengthSeconds] = useRecoilState(
+    totalLengthSecondsState
+  );
+  const [shots, setShots] = useRecoilState(currentShotsState);
 
   const askForScreenShare = async () => {
     if (askingForScreenShare) return; //One request at a time
@@ -68,9 +90,28 @@ function Feed({ data, width, height, hideIndicator = false }: IFeedProps) {
     setPlayerKey(`player${data.number}` + new Date());
   };
 
+  const handleAddShotToTimeline = async (shot: IAddedShot) => {
+    let currPosition: number = await getState(setCurrPosition);
+    let totalLengthSeconds = await getState(setTotalLengthSeconds);
+
+    await addShotToTimeline(shot, currPosition, totalLengthSeconds, setShots);
+
+    console.log("Save shots");
+    const shots = await getState(setShots);
+    await saveShots(shots, projectId as string);
+  };
+
   const switchMedia = () => {
     if (currentActiveMedia === data.number.toString()) {
       return;
+    }
+
+    if (isEditingShots) {
+      handleAddShotToTimeline({
+        mediaNumber: data.number,
+        color: data.color || "#808080",
+        name: "",
+      });
     }
     handleMediaChange(obs, data.number.toString());
   };

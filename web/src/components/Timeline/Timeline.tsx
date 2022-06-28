@@ -15,11 +15,14 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import { useDebouncedCallback } from "use-debounce";
 import ActiveShotContext from "../../context/ActiveShot.context";
 import OBSContext from "../../context/OBS.context";
+import addShotToTimeline from "../../helpers/addShotToTimeline";
 import handleMediaChange from "../../helpers/handleMediaChange";
 import { deleteShot, editShot, getShots, saveShots } from "../../helpers/shots";
+import currPositionState from "../../recoil/curr-position";
 import currentShotsState from "../../recoil/current-shots";
 import isEditingShotsState from "../../recoil/is-editing-shots";
 import socketIoState from "../../recoil/socketio";
+import totalLengthSecondsState from "../../recoil/total-length-seconds";
 import { IMedia } from "../../types/Media.type";
 import { IProject } from "../../types/Project.type";
 import { IAddedShot, IShot } from "../../types/Shot.type";
@@ -43,8 +46,10 @@ function Timeline({ media, project }: ITimelineProps) {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currPosition, setCurrPosition] = useState(0);
-  const [totalLengthSeconds, setTotalLengthSeconds] = useState(0);
+  const [currPosition, setCurrPosition] = useRecoilState(currPositionState);
+  const [totalLengthSeconds, setTotalLengthSeconds] = useRecoilState(
+    totalLengthSecondsState
+  );
   const [activeShotIndex, setActiveShotIndex] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isBusyPlaying, setIsBusyPlaying] = useState(false);
@@ -252,60 +257,12 @@ function Timeline({ media, project }: ITimelineProps) {
     await handleMediaChange(obs, shot.mediaNumber.toString());
   };
 
-  const addShotToTimeline = async (shot: IAddedShot) => {
+  const handleAddShotToTimeline = async (shot: IAddedShot) => {
     let currPosition: number = await getState(setCurrPosition);
     let totalLengthSeconds = await getState(setTotalLengthSeconds);
 
-    console.log(currPosition);
-    setShots((prevShots) => {
-      let newShots = [...prevShots];
-      //Take the first shot with the delay higher than the inserted one. Insert the new shot before it.
-      let isLast = false;
-      let insertShotIndex = prevShots.findIndex(
-        (element) => element.delaySeconds > currPosition
-      );
-      if (insertShotIndex < 0) {
-        insertShotIndex = prevShots.length;
-        isLast = true;
-      }
-      console.log("insert shot index", insertShotIndex);
+    await addShotToTimeline(shot, currPosition, totalLengthSeconds, setShots);
 
-      if (isLast) {
-        console.log("IS LAST");
-        shot.durationSeconds = totalLengthSeconds - currPosition;
-      } else {
-        //Calculate the shot duration
-        let nextShot = prevShots[insertShotIndex];
-        console.log("NEXT", nextShot);
-        if (nextShot) {
-          console.log("THAT ONE");
-          shot.durationSeconds = nextShot.delaySeconds - currPosition;
-        } else {
-          console.error(`Couldn't find the next shot`);
-          toast.error(`Couldn't find the next shot`);
-        }
-      }
-
-      shot.delaySeconds = currPosition;
-
-      newShots.splice(insertShotIndex, 0, shot as IShot);
-
-      //If the previous shot exists, change its duration to fit the new shot
-      let prevShot = newShots[insertShotIndex - 1];
-      if (prevShot) {
-        newShots[insertShotIndex - 1] = {
-          ...newShots[insertShotIndex - 1],
-          durationSeconds: currPosition - prevShot.delaySeconds,
-        };
-      }
-
-      console.log(shot);
-      console.log(newShots);
-
-      console.log(`Shot at ${insertShotIndex}`);
-
-      return newShots;
-    });
     setAreShotsSaved(false);
     saveShotsDebounced();
   };
@@ -437,7 +394,7 @@ function Timeline({ media, project }: ITimelineProps) {
           ) {
             handleMediaChange(obs, e.key);
             if (isEditingShots) {
-              addShotToTimeline({
+              handleAddShotToTimeline({
                 mediaNumber: parseInt(e.key),
                 color: media.find(
                   (element) => element.number.toString() === e.key.toString()

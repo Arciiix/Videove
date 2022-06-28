@@ -136,7 +136,7 @@ function App() {
         isRecording={obsRecordingStreamingStatus.recording}
         isStreaming={obsRecordingStreamingStatus.streaming}
       />
-      <MainGrid media={project.media} />
+      <MainGrid media={project.media} project={project} />
       <Timeline media={project.media} project={project} />
     </div>
   );
